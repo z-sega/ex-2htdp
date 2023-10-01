@@ -1,0 +1,144 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-109) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/universe)
+(require 2htdp/image)
+
+;; - ex-109
+;; Design a world program that recognizes a pattern in a
+;; sequence of KeyEvents. Initially the program shows a
+;; 100 x 100 white rectangle. Once your program has
+;; encountered the first desired letter, it displays a
+;; yellow rectangle of the same size. After encountering
+;; the final letter, the color of the rectangle turns
+;; green. If any "bad" key event occurs, the program displays
+;; a red rectangle.
+
+
+(define WIDTH 100)
+(define HEIGHT 100)
+(define BACKGROUND (rectangle
+                    (* 1.2 WIDTH)
+                    (* 1.2 HEIGHT)
+                    "solid"
+                    "black"))
+
+(define AA "start, expect an 'a'")
+(define BB "expect 'b', 'c', or 'd'")
+(define DD "finished")
+(define ER "error, illegal key")
+
+; ExpectsToSee is one of:
+; - AA
+; - BB
+; - DD
+; - ER
+
+
+(define-struct Pattern [state sequence])
+; A Pattern is a structure:
+;   (make-Pattern ExpectsToSee String)
+; *interp.* (make-Pattern st seq) describes a
+; pattern with a state of st,
+; and a sequence of inputs seq (thus far).
+
+(define patternAA (make-Pattern AA ""))
+(define patternBB (make-Pattern BB "a"))
+(define patternDD (make-Pattern DD "abbcd"))
+(define patternER (make-Pattern ER "e"))
+
+
+(define (pattern-match p)
+  (big-bang p
+    [to-draw p-render]
+    [on-key p-handle-key]))
+
+
+; Pattern -> Image
+; Render the given Pattern p
+
+(check-expect (p-render patternAA)
+              (overlay
+               (rectangle WIDTH HEIGHT "outline" "white")
+               BACKGROUND))
+(check-expect (p-render patternBB)
+              (overlay
+               (rectangle WIDTH HEIGHT "outline" "yellow")
+               BACKGROUND))
+(check-expect (p-render patternDD)
+              (overlay
+               (rectangle WIDTH HEIGHT "outline" "green")
+               BACKGROUND))
+(check-expect (p-render patternER)
+              (overlay
+               (rectangle WIDTH HEIGHT "outline" "red")
+               BACKGROUND))
+
+(define (p-render p)
+  (overlay
+   (rectangle
+    WIDTH
+    HEIGHT
+    "outline"
+    (cond
+      [(eq? (Pattern-state p) AA) "white"]
+      [(eq? (Pattern-state p) BB) "yellow"]
+      [(eq? (Pattern-state p) DD) "green"]
+      [(eq? (Pattern-state p) ER) "red"]))
+   BACKGROUND))
+     
+
+; Pattern KeyEvent -> Pattern
+; Computes the next state of the given Pattern p
+; based on the given KeyEvent k
+
+(check-expect (p-handle-key patternAA "a")
+              (make-Pattern BB "a"))
+(check-expect (p-handle-key patternBB "b")
+              (make-Pattern BB "ab"))
+(check-expect (p-handle-key patternBB "d")
+              (make-Pattern DD "ad"))
+(check-expect (p-handle-key patternER "d")
+              (make-Pattern ER "ed"))
+
+(check-expect (p-handle-key patternAA "f")
+              (make-Pattern ER "f"))
+(check-expect (p-handle-key patternBB "f")
+              (make-Pattern ER "af"))
+(check-expect (p-handle-key patternDD "d")
+              (make-Pattern DD "abbcdd"))
+
+(define (p-handle-key p k)
+  ; (... k (Pattern-state k) (Pattern-sequence)))
+  (cond
+    [(eq? (Pattern-state p) AA)
+     (if (key=? k "a")
+         (make-Pattern
+          BB
+          (string-append (Pattern-sequence p) k))
+         (make-Pattern
+          ER
+          (string-append (Pattern-sequence p) k)))]
+    [(eq? (Pattern-state p) BB)
+     (cond
+       [(or (key=? k "b") (key=? k "c"))
+        (make-Pattern
+         BB
+         (string-append (Pattern-sequence p) k))]
+       [(key=? k "d")
+        (make-Pattern
+         DD
+         (string-append (Pattern-sequence p) k))]
+       [else
+        (make-Pattern
+          ER
+          (string-append (Pattern-sequence p) k))])]
+    [(eq? (Pattern-state p) DD)
+     (make-Pattern
+      DD
+      (string-append (Pattern-sequence p) k))]
+    [(eq? (Pattern-state p) ER)
+     (make-Pattern
+      ER
+      (string-append (Pattern-sequence p) k))]))
+  
