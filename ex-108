@@ -1,0 +1,25 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-108) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+
+
+;; - ex-108.rkt
+;; In its default state, a pedestrian crossing light
+;; shows an orange person standing, on a black background.
+;; When it is time to allow the pedestrian to cross the
+;; street, the light receives a signal and switches to a
+;; green, walking person. This phase lasts for 10 seconds.
+;; After that the light displays the digits 9, 8, ..., 0
+;; with odd numbers colored orange and even numbers colored
+;; green. When the countdown reaches 0, the light switches
+;; back to its default state.
+;;
+;; Design a world program that implements such a pedestrian
+;; traffic light. The light switches from its default state
+;; when you press the space bar on your keyboard. All other
+;; transitions must be reactions to clock ticks. You may
+;; wish to use the following images
+;;
+;; ...
+;; or you can make up your own stick figures with the
+;; 2htdp/image teachpack.
