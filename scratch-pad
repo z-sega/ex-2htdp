@@ -1,0 +1,47 @@
+
+* INTERMEZZO 1
+
+A programming language has a vocabulary and a grammer;
+programmers use the word **syntax** for these elements.
+
+A sentence in BSL is an expression or a definition.
+
+The grammar of BSL dictates how to form these phrases.
+
+To determine whether a sentence is meaningful, we must
+know the **meaning** of a language;
+programmars call this semantics.
+
+** BSL Grammar
+
+core:
+
+#+BEGIN_SRC racket
+
+  program = def-expr ...
+
+  def-expr = def | expr
+
+  def = (define (variable variable variable ...) expr)
+  | (define name expr)
+
+  expr = variable
+  | value
+  | (primitive expr expr ...)
+  | (variable expr expr ...)
+  | (cond [expr expr] ... [expr expr])
+  | (cond [expr expr] ... [else expr])
+  | (and expr expr)
+  | (or expr expr)
+
+#+END_SRC
+
+** BSL Errors
+
+When DrRacket discovers that some parenthesized phrase
+does not belong to BSL, it signals a **syntax error**.
+
+When DrRacket evaluates a syntactically legal program and
+discovers that some operation is used on the wrong kind of
+value, it raises a **run-time error**.
+

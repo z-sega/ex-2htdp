@@ -1,0 +1,108 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-139) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+
+; A PositiveNumber is a Number greater than/equal to 0.
+
+(define p0 0.00)
+(define p1 20.00)
+(define p2 40.00)
+(define p3 60.00)
+
+;; -- ex-138.rkt
+;; Here is a data definition for representing sequences of
+;; amounts of money:
+
+
+; A List-of-amounts is one of:
+; - '()
+; - (cons PositiveNumber List-of-amounts)
+
+;; Create some examples to make sure you understand the data
+;; definition. Also add an arrow for the self-reference.
+
+(define l0 '())
+(define l1 (cons p1 l0))
+(define l2 (cons p2 l1))
+(define l3 (cons p3 l2))
+
+;; Design the sum function, which consumes a List-of-amounts
+;; and computes the sum of the amounts. Use DrRacket's stepper
+;; to see how (sum l) works for a short list l in
+;; List-of-amounts.
+
+; List-of-amounts -> PositiveNumber
+; Returns the sum of the amounts in the given List-of-amounts
+; l
+
+(check-expect (sum l0) p0)
+(check-expect (sum l1) p1)
+(check-expect (sum l2) (+ p1 p2))
+(check-expect (sum l3) (+ p1 p2 p3))
+
+(define (sum l)
+  (cond
+    [(empty? l) 0.00]
+    [(cons? l)
+     (+
+      (first l)
+      (sum (rest l)))]))
+
+
+;; -- ex-139
+;; Now take a look at this data definition:
+
+; A List-of-numbers is one of:
+; - '()
+; - (cons Number List-of-numbers)
+(define n0 '())
+(define n1 (cons -2 n0))
+(define n2 (cons 3 n1))
+
+;; Some elements of this class of data are appropriate inputs
+;; for sum from ex-138 and some aren't.
+;;
+;; Design the funciton pos?, which consumes a List-of-numbers
+;; and determines whether all nubers are positive numbers. In
+;; other words, if (pos? l) yields #true, then l is an element
+;; of List-of-amounts. Use DrRacket's stepper to understand how
+;; pos? works for (cons 5 '()) and (cons -1 '()).
+
+
+; List-of-numbers -> Boolean
+; Returns #t if the given List-of-numbers is also a
+; List-of-amounts
+
+(check-expect (pos? l2) #true)
+(check-expect (pos? n2) #false)
+
+(define (pos? l)
+  (cond
+    [(empty? l) #t]
+    [(cons? l)
+     (and
+      (positive? (first l))
+      (pos? (rest l)))]))
+
+
+;; Also design check-sum. The function consumes a
+;; List-of-numbers. It produces their sum if the input also
+;; belongs to List-of-amounts; otherwise it signals an error.
+;; Hint: Recall to use check-error.
+
+
+; List-of-numbers -> Number
+; Returns the sum of the amounts in the given List-of-numbers,
+; if it is a List-of-amounts.
+(define ERROR-MSG "input must be a List-of-amounts")
+
+(check-expect (checked-sum l2) (sum l2))
+(check-error (checked-sum n2) ERROR-MSG)
+
+(define (checked-sum l)
+  (cond
+    [(pos? l) (sum l)]
+    [else (error ERROR-MSG)]))
+
+;; What does sum compute for an element of List-of-numbers?
+(sum n2) ;; == (+ 3 -2 0) == 1

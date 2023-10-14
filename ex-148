@@ -1,0 +1,39 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-148) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; --ex-148
+;; Compare the function definitions from the section
+;; (sum, how-many, all-true, one-true) with the
+;; corresponding function definitions from the
+;; preceding sections. Is it better to work with data
+;; definitions that accommodate empty lists as opposed
+;; to definitions for non-empty lists? Why? Why not?
+
+
+;; It is not better to work with one or the other,
+;; the choice depends on your use-case or problem or
+;; what you're trying to do.
+;;
+;; Lists are great for cases when you need an
+;; arbitrary amount of data.
+;; 
+;; Non empty lists are great for cases when you
+;; need for an arbitrary amount of data but that
+;; amount is never 0.
+;;
+;; Depending on your choice, you must design the
+;; functions that process your list according to
+;; their data definitions
+;; (whether regular or non-empty).
+;;
+;; Personally, I believe non-empty lists are
+;; more challenging to design functions for.
+;; But their solutions end up being a bit more
+;; concise/clear. Based on the examples from
+;; the function definitions: sum, how-many,
+;; and especially all-true, and one-true.
+;;
+;; There is the added difference that the
+;; template contains the (first ne-l) expression
+;; in both clauses. However, I do not yet know
+;; the relevance of this.

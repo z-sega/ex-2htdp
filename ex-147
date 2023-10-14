@@ -1,0 +1,49 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-147) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+
+; A NEList-of-Booleans is one of:
+; - (cons Boolean '())
+; - (cons Boolean NEList-of-Booleans)
+(define l1 (cons #f '()))
+(define l2 (cons #t l1))
+(define lT (cons #t
+                 (cons #t '())))
+(define lF (cons #f
+                 (cons #f '())))
+
+
+; NEList-of-Booleans -> Boolean
+; Return #t, if ALL the booleans in/on the given
+; NEList-of-Booleans ne-l are #t
+
+(check-expect (all-true? l1) #f)
+(check-expect (all-true? l2) #f)
+(check-expect (all-true? lT) #t)
+
+(define (all-true? ne-l)
+  (cond
+    [(empty? (rest ne-l)) (first ne-l)]
+    [else
+     (and (first ne-l)
+          (all-true? (rest ne-l)))]))
+
+
+;; Now design one-true, a function that consumes a list of Boolean
+;; values and determines whether at least one item on the list is
+;; #t.
+
+; NEList-of-Booleans -> Boolean
+; Return #t, if any booleans in/on the given
+; NEList-of-Booleans ne-l is #t
+
+(check-expect (one-true? lT) #t)
+(check-expect (one-true? lF) #f)
+(check-expect (one-true? l2) #t)
+
+(define (one-true? ne-l)
+  (cond
+    [(empty? (rest ne-l)) (first ne-l)]
+    [else
+     (or (first ne-l)
+         (one-true? (rest ne-l)))]))

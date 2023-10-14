@@ -1,0 +1,43 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-145) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; --ex-145
+;; Design the sorted>? predicate, which consumes a
+;; NEList-of-temperatures and produces #t if the
+;; temperatures are sorted in descending order.
+;; That is, if the second if smaller than the
+;; first, the third smaller than the second, and
+;; and so on. Otherwise it produces #f.
+
+(define ABSOLUTE0 -272)
+
+
+; An NEList-of-temperatures is one of:
+; - (cons CTemperature '())
+; - (cons CTemperature NEList-of-temperatures)
+; *interpretation* non-empty lists of Celsius temperatures
+
+(define ne-l1 (cons ABSOLUTE0 '()))
+(define ne-lD (cons 3 (cons 2 (cons 1 '()))))
+(define ne-lA (cons 1 (cons 2 (cons 3 '()))))
+(define ne-lM (cons 3 (cons 1 (cons 2 '())))) 
+
+
+; NEList-of-temperatures -> Boolean
+; Returns #t if the given NEList-of-temperatures ne-l
+; is sorted in descending order, else #f
+
+(check-expect (sorted>? ne-l1) #t)
+(check-expect (sorted>? ne-lD) #t)
+(check-expect (sorted>? ne-lA) #f)
+(check-expect (sorted>? ne-lM) #f)
+
+(define (sorted>? ne-l)
+  (cond
+    [(empty? (rest ne-l)) #t]
+    [else
+     (and
+      (>
+       (first ne-l)
+       (first (rest ne-l)))
+      (sorted>? (rest ne-l)))]))

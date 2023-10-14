@@ -1,0 +1,39 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-111) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; - ex-111
+;; Take a look at these definitions:
+
+(define-struct Vec [x y])
+; A Vec is:
+;   (make-vec PositiveNumber PositiveNumber)
+; *interpretation* represents a velocity vector
+
+;; Develop the function checked-make-vec, which is
+;; to be understood as a checked version of the
+;; primitive operation make-vec. It ensures that the
+;; arguments to make-vec are positive numbers. In
+;; other words, checked-make-vec enforces our informal
+;; data definition.
+
+(define ERROR-MESSAGE
+  "make-Vec: x and y must be positive-numbers")
+
+; Number Number -> Vec
+; Enforce data definition of a Vec given two
+; positive numbers x and y to represent Vec-x and Vec-y
+
+(check-expect (checked-make-Vec 3 3)
+              (make-Vec 3 3))
+(check-error (checked-make-Vec -3 3) ERROR-MESSAGE)
+(check-error (checked-make-Vec 3 -3) ERROR-MESSAGE)
+(check-error (checked-make-Vec -3 -3) ERROR-MESSAGE)
+
+(define (checked-make-Vec x y)
+  (cond
+    [(and (number? x) (positive? x)
+          (number? y) (positive? y))
+     (make-Vec x y)]
+    [else (error ERROR-MESSAGE)]))
+
+

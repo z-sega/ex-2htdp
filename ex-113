@@ -1,0 +1,141 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-113) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; - ex-113
+;; Design predicates for the following data definitions
+;; from the preceding section: SIGS, Coordinate (ex-105),
+;; and VAnimal
+
+
+; A UFO is a Posn
+; *interpretation* (make-posn x y) is the UFO's location
+; (using the top-down, left-to-right convention)
+(define ufo1 (make-posn 3 3))
+
+(define-struct Tank [loc vel])
+; A Tank is a structure:
+;   (make-tank Number Number)
+; *interpretation* (make-Tank x dx) specifies the position
+; (x, HEIGHT) and the tank's speed: dx pixels/tick
+(define tank1 (make-Tank 5 2))
+
+; A Missile is a Posn.
+; *interpretation* (make-posn x y) is the missile's place
+(define missile1 (make-posn 3 4))
+
+(define-struct Aim [ufo tank])
+(define aim1 (make-Aim ufo1 tank1))
+
+(define-struct Fired [ufo tank missile])
+(define fired1 (make-Fired ufo1 tank1 missile1))
+
+; A SIGS is one of:
+; - (make-aim UFO Tank)
+; - (make-fired UFO Tank Missile)
+; *interpretation* represents the complete state
+; of a space invader game
+
+; Any -> Boolean
+; is s an element of the SIGS collection
+
+(check-expect (SIGS? aim1) #true)
+(check-expect (SIGS? fired1) #true)
+(check-expect (SIGS? tank1) #false)
+
+(define (SIGS? s)
+  (cond
+    [(Aim? s) #true]
+    [(Fired? s) #true]
+    [else #false]))
+
+;; ------------------------------------------
+
+; A Coordinate is one of:
+; - a NegativeNumber
+; *interpretation* on the y axis, distance from top
+; - a PositiveNumber
+; *interpretation* on the x axis, distance from left
+; - a Posn
+; *interpretation* an ordinary Cartesian point
+
+(define coord1 -3)
+(define coord2 2)
+(define coord3 (make-posn 2 -3))
+
+; Any -> Boolean
+; is c an element of the Coordinate collection
+
+(check-expect (Coordinate? coord1) #true)
+(check-expect (Coordinate? coord2) #true)
+(check-expect (Coordinate? coord3) #true)
+(check-expect (Coordinate? "") #false)
+
+(define (Coordinate? c)
+  (cond
+    [(number? c) #true]
+    [(posn? c) #true]
+    [else #false]))
+
+
+;; ------------------------------------------
+
+(define-struct Vector [x dir])
+; A Vector is a structure:
+;   (make-Vector Number Boolean)
+; *interpretation*
+; A Vector (make-Vector x d) describes a vector
+; with a magnitude of x on the x-axis,
+; and an orientation/direction d:
+; #true (right),
+; #false (left)
+
+(define vec1 (make-Vector 4 #false))
+
+
+(define-struct VCat [vector score+])
+; A VCat is a structure:
+;   (make-VCat Vector Number)
+; *interpretation* (make-VCat v h) describes a
+; virtual cat pet with a **velocity** v and
+; score of h
+; (my bad: velocity is speed and direction :P)
+
+(define cat1 (make-VCat vec1 40))
+
+
+(define RED "red")
+(define GREEN "green")
+(define BLUE "blue")
+
+; A Color is one of:
+; - RED
+; - GREEN
+; - BLUE
+; it represents the possible colors of the
+; chameleon
+
+(define-struct VCham [x score color])
+; A VCham is a structure:
+;   (make-VCham Number Score Color)
+; *interpretation* (make-VCham x h c) describes
+; a virtual chameleon pet positioned at x on the
+; x-axis, colored c, with a score h
+
+(define cham1 (make-VCham 100 89 RED))
+
+; A VAnimal is either:
+; - a VCat
+; - a VCham
+
+; Any -> Boolean
+; is v an element of the VAnimal collection
+
+(check-expect (VAnimal? cat1) #true)
+(check-expect (VAnimal? cham1) #true)
+(check-expect (VAnimal? "") #false)
+
+(define (VAnimal? v)
+  (cond
+    [(VCat? v) #true]
+    [(VCham? v) #true]
+    [else #false]))

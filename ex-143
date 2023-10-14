@@ -1,0 +1,78 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-143) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(define ABSOLUTE0 -272)
+; A CTemperature is a Number greater than ABSOLUTE0.
+
+
+; A List-of-temperatures is one of:
+; - '()
+; - (cons CTemperature List-of-temperatures)
+(define lot0 '())
+(define lot1 (cons 1 (cons 2 (cons 3 '()))))
+
+
+; List-of-temperatures -> Number
+; computes the average temperature
+
+(check-expect (average lot1) 2)
+
+(define (average alot)
+  (/
+   (sum alot)
+   (how-many alot)))
+
+
+; List-of-temperatures -> Number
+; adds up the temperatures on the given list
+
+(check-expect (sum lot0) 0)
+(check-expect (sum lot1) 6)
+
+(define (sum alot)
+  (cond
+    [(empty? alot) 0]
+    [(cons? alot)
+     (+
+      (first alot)
+      (sum (rest alot)))]))
+
+
+; List-of-temperatures -> Number
+; counts the temperatures on the given list
+
+(check-expect (how-many lot0) 0)
+(check-expect (how-many lot1) 3)
+
+(define (how-many alot)
+  (cond
+    [(empty? alot) 0]
+    [(cons? alot)
+     (+
+      1
+      (how-many (rest alot)))]))
+
+
+;; -- ex-143
+;; Determine how average behaves in DrRacket when applied to
+;; the empty list. Then checked-average, a function that
+;; produces an informative error message when it is applied
+;; to '().
+
+(define ERR-MSG (string-append
+                 "average: is a partial function"
+                 "- it does not work for an empty-list"))
+
+
+; List-of-temperatures -> Number
+; computes the average temperature from given
+; List-of-temperatures alot, else ERR if the
+; given list is empty.
+
+(check-expect (checked-average lot1) (average lot1))
+(check-error (checked-average lot0) ERR-MSG)
+
+(define (checked-average alot)
+  (cond
+    [(empty? alot) (error ERR-MSG)]
+    [(cons? alot) (average alot)]))

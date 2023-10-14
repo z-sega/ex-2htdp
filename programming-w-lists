@@ -1,0 +1,15 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname programming-w-lists) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; Sample Problem
+;; You are working on the contact list for some new cell
+;; phone. The phone's owner updates and consults this list
+;; on various occassions. For now, you are assigned the task
+;; of designing a function that consumes the list of
+;; contacts and determines whether it contains the name
+;; "Flatt".
+
+; A List-of-names is one of:
+; - '()
+; - (cons String List-of-names)
+; *interpretation* a list of contacts, by last name

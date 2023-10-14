@@ -1,0 +1,72 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-140) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; --ex-140
+;; Design the function all-true, which consumes a list of
+;; Boolean values and determines whether all of them are #t.
+;; In other words, if there is any #f on the list, the function
+;; produces #f.
+
+; A List-of-booleans is one of:
+; - '()
+; - (cons Boolean List-of-booleans)
+(define l0 '())
+(define l1 (cons #f l0))
+(define l2 (cons #t l1))
+(define lT (cons #t
+                 (cons #t '())))
+(define lF (cons #f
+                 (cons #f '())))
+
+; List-of-booleans -> Boolean
+; Return #t, if ALL the booleans in/on the given List-of-booleans
+; l are #t
+
+(check-expect (all-true? l0) #t)
+(check-expect (all-true? l1) #f)
+(check-expect (all-true? l2) #f)
+(check-expect (all-true? lT) #t)
+
+(define (all-true? alob)
+  (cond
+    [(empty? alob) #t]
+    [(cons? alob)
+     (and
+      (first alob)
+      (all-true?
+       (rest alob)))]))
+
+;; Now design one-true, a function that consumes a list of Boolean
+;; values and determines whether at least one item on the list is
+;; #t.
+
+(check-expect (one-true? lT) #t)
+(check-expect (one-true? lF) #f)
+(check-expect (one-true? l2) #t)
+
+(define (one-true? alob)
+  (cond
+    [(empty? alob) #f]
+    [(cons? alob)
+     (or
+      (first alob)
+      (one-true? (rest alob)))]))
+
+;; Empy the table-based approach to coding. It may help with the
+;; base case. Use DrRacket's stepper to see how these functions
+;; process the lists (cons #t '()), (cons #f '()), and
+;; (cons #t (cons #f '())).
+
+(define s1 (cons #t '()))
+(define s2 (cons #f '()))
+(define s3 (cons #t
+                 (cons #f '())))
+
+
+(all-true? s1)
+(all-true? s2) ;; short-circuit in combinator
+(all-true? s3)
+
+(one-true? s1) ;; short-circuit in combinator
+(one-true? s2)
+(one-true? s3) ;; short-circuit in combinator

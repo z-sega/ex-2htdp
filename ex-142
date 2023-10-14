@@ -1,0 +1,59 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-142) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/image)
+
+;; -- ex-142
+;; Design the ill-sized? function, which consumes a list of images
+;; loi and a positive number n. It produces the first image on loi
+;; that is not an n by n square; if it cannot find such an image,
+;; it produces #false.
+;; *Hint* Use ImageOrFalse for the result part of the signature.
+
+; ImageOrFalse is one of:
+; - Image
+; - #f
+
+(define iF #f)
+(define i1
+  (rectangle 50 50 "solid" "red"))
+(define i2
+  (rectangle 40 40 "solid" "blue"))
+(define i3
+  (rectangle 30 30 "solid" "green"))
+
+
+; A List-of-image is one of:
+; - '()
+; - (cons Image List-of-image)
+
+(define loi0 '())
+(define loi1 (cons i1 '()))
+(define loi2 (cons i2 loi1))
+(define loi3 (cons i3 loi2))
+
+
+; List-of-image Number -> ImageOrFalse
+; Returns the first image on/in the given List-of-image loi
+; that is not an n by n square; returns #f if no image in loi
+; matches condition
+
+(check-expect (ill-sized? loi0 50) #f)
+(check-expect (ill-sized? loi3 60) #f)
+(check-expect (ill-sized? loi3 50) i1)
+(check-expect (ill-sized? loi3 40) i2)
+(check-expect (ill-sized? loi3 30) i3)
+
+(define (ill-sized? loi n)
+  (cond
+    [(empty? loi) #f]
+    [(cons? loi)
+     (if (=
+          n
+          (image-width (first loi))
+          (image-height (first loi)))
+         (first loi)
+         (ill-sized? (rest loi) n))]))
+
+
+

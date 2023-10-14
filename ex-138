@@ -1,0 +1,49 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-138) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+
+; A PositiveNumber is a Number greater than/equal to 0.
+
+(define p0 0.00)
+(define p1 20.00)
+(define p2 40.00)
+(define p3 60.00)
+
+;; -- ex-138.rkt
+;; Here is a data definition for representing sequences of
+;; amounts of money:
+
+
+; A List-of-amounts is one of:
+; - '()
+; - (cons PositiveNumber List-of-amounts)
+
+;; Create some examples to make sure you understand the data
+;; definition. Also add an arrow for the self-reference.
+
+(define l0 '())
+(define l1 (cons p1 l0))
+(define l2 (cons p2 l1))
+(define l3 (cons p3 l2))
+
+;; Design the sum function, which consumes a List-of-amounts
+;; and computes the sum of the amounts. Use DrRacket's stepper
+;; to see how (sum l) works for a short list l in
+;; List-of-amounts.
+
+; List-of-amounts -> PositiveNumber
+; Returns the sum of the amounts in the given List-of-amounts
+; l
+
+(check-expect (sum l0) p0)
+(check-expect (sum l1) p1)
+(check-expect (sum l2) (+ p1 p2))
+(check-expect (sum l3) (+ p1 p2 p3))
+
+(define (sum l)
+  (cond
+    [(empty? l) 0.00]
+    [(cons? l)
+     (+
+      (first l)
+      (sum (rest l)))]))
