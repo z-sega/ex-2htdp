@@ -29,9 +29,10 @@
 ;; Personally, I believe non-empty lists are
 ;; more challenging to design functions for.
 ;; But their solutions end up being a bit more
-;; concise/clear. Based on the examples from
-;; the function definitions: sum, how-many,
-;; and especially all-true, and one-true.
+;; concise/clear. Of course, this idea is just
+;; based on the examples from the function
+;; definitions: sum, how-many; and especially
+;; all-true, and one-true.
 ;;
 ;; There is the added difference that the
 ;; template contains the (first ne-l) expression

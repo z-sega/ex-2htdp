@@ -1,0 +1,49 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-152) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/image)
+
+
+; An N is one of:
+; - 0
+; - (add1 N)
+; *interpretation*
+; represents the set of counting/natural numbers
+
+
+;; ex-152
+;; Design two functions: col and row.
+;;
+;; The function col consumes a natural number n
+;; and an image img. It produces a column
+;; - a vertical arrangement - of n copies of img.
+
+(define CELL (rectangle 10 10 "outline" "white"))
+
+; N Image -> Image
+; Returns a vertical arrangement of n copies of img
+
+(check-expect (col 0 CELL) empty-image)
+(check-expect (col 3 CELL) (above CELL CELL CELL))
+
+(define (col n img)
+  (cond
+    [(zero? n) empty-image]
+    [(positive? n)
+     (above img (col (sub1 n) img))]))
+
+;; The function row consumes a natural number n
+;; and an image img. It produces a row - a
+;; horizontal arrangment - of n copies of img.
+
+; N Image -> Image
+; Returns a horizontal arrangement of n copies of img
+
+(check-expect (row 0 CELL) empty-image)
+(check-expect (row 3 CELL) (beside CELL CELL CELL))
+
+(define (row n img)
+  (cond
+    [(zero? n) empty-image]
+    [(positive? n)
+     (beside img (row (sub1 n) img))]))
