@@ -1,0 +1,109 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-160) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+
+; A List-of-strings is one of:
+; - '()
+; - (cons String List-of-strings)
+(define los0 '())
+(define los1 (cons "cat" los0))
+(define los2 (cons "bat" los1))
+(define los3 (cons "cat" los2))
+
+
+; List-of-strings String -> N
+; determines how often the String s occurs in
+; the given List-of-strings los
+
+(check-expect (count los2 "rat") 0)
+(check-expect (count los2 "bat") 1)
+(check-expect (count los3 "cat") 2)
+
+(define (count los s)
+  (cond
+    [(empty? los) 0]
+    [(cons? los)
+     (if
+      (string=? (first los) s)
+      (+ 1
+         (count (rest los) s))
+      (count (rest los) s))]))
+
+
+; A Son.L is one of:
+; - '()
+; - (cons Number Son.L)
+(define s1.L (cons 1 (cons 1 '())))
+
+; A Son.R is one of:
+; - '()
+; - (cons Number Son.R)
+; *Constraint*
+; If s is a Son.R, no number
+; occurs twice in s
+(define s1.R (cons 1 '()))
+
+; Son is used when it
+; applies to Son.L and Son.R
+
+
+
+; Son
+(define es '())
+(define set123 (cons 1 (cons 2 (cons 3 '()))))
+
+
+; Number Son -> Boolean
+; is x in s
+(define (in? x s)
+  (member? x s))
+
+
+; Number Son.L -> Son.L
+; removes x from s
+
+(check-expect (set-.L 1 s1.L) es)
+
+(define (set-.L x s)
+  (remove-all x s))
+
+
+; Number Son.R -> Son.R
+
+(check-expect (set-.R 1 s1.R) es)
+
+(define (set-.R x s)
+  (remove x s))
+
+
+; Number Son -> Son
+; substracts x from s
+(define (set- x s) s)
+
+
+;; ex-160
+;; Design the functions set+.L and set+.R, which create
+;; a set by adding a number x to some given set s for
+;; the left-hand and right-hand data definition,
+;; respectively.
+
+
+; Number Son.L -> Son.L
+; adds the given Number n to the given Son.L s
+
+(check-expect (set+.L 3 '()) (cons 3 '()))
+(check-expect (set+.L 3 (cons 3'())) (cons 3 (cons 3 '())))
+
+(define (set+.L n s)
+  (cons n s))
+
+; Number Son.R -> Son.R
+; adds the given Number n to the given Son.R s
+
+(check-expect (set+.R 3 '()) (cons 3 '()))
+(check-expect (set+.R 3 (cons 3'())) (cons 3 '()))
+
+(define (set+.R n s)
+  (if (member? n s)
+      s
+      (cons n s)))

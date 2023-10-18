@@ -1,0 +1,181 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-158) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/universe)
+(require 2htdp/image)
+
+;; Sample Problem
+;; Design a world program that simulates firing
+;; shots. Every time the "player" hits the space
+;; bar, the program adds a shot to the bottom of
+;; the canvas. These shots rise vertically at
+;; the rate of one pixel per tick.
+
+(define HEIGHT 220) ; distances in terms of pixels
+(define WIDTH 100)
+(define XSHOTS (/ WIDTH 2))
+
+; graphical constants
+(define BACKGROUND (empty-scene WIDTH HEIGHT))
+(define SHOT (rectangle 2.5 7.5 "solid" "red"))
+
+
+;; Given that we cannot predict how many shots the
+;; player will "fire", we use a list to represent
+;; them:
+
+; A Shot is a Number.
+; *interpretation* represents the shot's
+; y-coordinate
+(define s1 40)
+(define s2 30)
+(define sOOB1 -5)
+(define sOOB2 -20)
+
+
+; A List-of-shots is one of:
+; - '()
+; - (cons Shot List-of-shots)
+; *interpretation* the collection of shots fired
+(define los0 '())
+(define los1 (cons s1 los0))
+(define los2 (cons s2 los1))
+(define losOOB1 (cons s2 (cons s1 (cons sOOB1 '()))))
+(define losOOB2 (cons s2 (cons s1 (cons sOOB2 '()))))
+
+; -------- WORLD-STATE
+; A ShotWorld is List-of-numbers.
+; *interpretation* each number on such a list
+; represents the y-coordinate of a shot
+
+
+; -------- WORLD-PROGRAM
+; main runs the world program with a seed
+; value for the the world-state. This value
+; is an element of the ShotWorld data definition.
+; It represents a list of shots.
+; The world program has 3 event handlers that:
+; - moves any fired shot 1 pixel higher per clock tick,
+; - fires shots when the " " key is hit,
+; - and, draws the shots into the scene
+
+; ShotWorld -> ShotWorld
+(define (main w0)
+  (big-bang w0
+    [on-tick tock.v2]
+    [on-key keyh]
+    [to-draw to-image]))
+
+
+; ShotWorld -> Image
+; adds the image of a shot for each y on w
+; at (MID, y) to the background image
+
+(check-expect (to-image '()) BACKGROUND)
+(check-expect (to-image (cons 9 '()))
+              (render-shot 9 BACKGROUND))
+                        
+(define (to-image w)
+  (cond
+    [(empty? w) BACKGROUND]
+    [(cons? w)
+     (render-shot (first w) (to-image (rest w)))]))
+     
+
+; Shot Image -> Image
+; adds the given Shot s to the given Image img
+
+(check-expect (render-shot s1 BACKGROUND)
+              (place-image
+               SHOT
+               XSHOTS s1
+               BACKGROUND))
+               
+(define (render-shot s img)
+  (place-image
+   SHOT
+   XSHOTS s
+   img))
+
+
+;; ex-158
+;; If you run main, press the space bar (fire
+;; a shot), and wait for a goody amount of time,
+;; the shot disappears from the canvas. When you
+;; shut down the world canvas, however, the result
+;; is a world that still contains this invisible shot.
+;;
+;; Design an alternative tock function that doesn't
+;; just move shots one pixel per clock tick but also
+;; eliminates those whose coordinates place them
+;; above the canvas. *Hint* You may wish to consider
+;; the design of an auxiliary function for the
+;; recursive cond clause.
+
+
+; ShotWorld -> ShotWorld
+; moves each shot on w up by one pixel
+
+(check-expect (tock.v2 los0) '())
+(check-expect (tock.v2 los1) (cons 39 '()))
+(check-expect (tock.v2 los2) (cons 29 (cons 39 '())))
+(check-expect (tock.v2 losOOB1) (cons 29 (cons 39 '())))
+
+(define (tock.v2 w)
+  (cond
+    [(empty? w) '()]
+    [(cons? w)
+     (cons (-
+            (first (remove-out-of-bounds w))
+            1)
+           (tock.v2 (rest (remove-out-of-bounds w))))]))
+     
+     
+     
+; List-of-shots -> List-of-shots
+; remove out-of-bounds shots from the given
+; List-of-shots los
+
+(check-expect (remove-out-of-bounds '()) '())
+(check-expect (remove-out-of-bounds los2) los2)
+(check-expect (remove-out-of-bounds losOOB1)
+              (cons s2 (cons s1 '())))
+(check-expect (remove-out-of-bounds losOOB2)
+              (cons s2 (cons s1 '())))
+
+(define (remove-out-of-bounds alos)
+  (cond
+    [(empty? alos) '()]
+    [(cons? alos)
+     (if (negative? (first alos))
+         (remove-out-of-bounds (rest alos))
+         (cons (first alos) (remove-out-of-bounds (rest alos))))]))
+
+
+; ShotWorld -> ShotWorld
+; moves each shot on w up by one pixel
+
+(check-expect (tock los0) '())
+(check-expect (tock los1) (cons 39 '()))
+(check-expect (tock los2) (cons 29 (cons 39 '())))
+
+(define (tock w)
+  (cond
+    [(empty? w) w]
+    [(cons? w)
+     (cons (- (first w) 1)
+           (tock (rest w)))]))
+     
+
+; ShotWorld KeyEvent -> ShotWorld
+; adds a shot to the world
+; if the player presses the space bar
+
+(check-expect (keyh los0 "b") los0)
+(check-expect (keyh los0 " ") (cons HEIGHT '()))
+(check-expect (keyh los1 " ") (cons HEIGHT los1))
+
+(define (keyh w ke)
+  (cond
+    [(key=? " " ke) (cons HEIGHT w)]
+    [else w]))

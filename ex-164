@@ -1,0 +1,80 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-164) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex164
+;; Design the function convert-euro, which converts a
+;; list of US$ amounts into a list of euro amounts.
+;; Look up the current exchange rate on the web.
+
+(define USD->EURO 0.94)
+
+(define us1 1)
+(define us2 25)
+(define us3 100)
+
+
+; A List-of-numbers is one of:
+; - '()
+; - (cons Number List-of-numbers)
+; *interp.* represents a list of amounts of money
+; of any currency.
+(define lou0 '())
+(define lou1 (cons us1 lou0))
+(define lou2 (cons us2 lou1))
+(define lou3 (cons us3 lou2))
+
+
+; Number List-of-numbers -> List-of-numbers
+; computes a list of euro amounts from
+; given:
+; - conversion rate
+; - list of usd amounts
+
+
+(check-expect (convert-euro* USD->EURO lou0) '())
+(check-expect (convert-euro* USD->EURO lou3)
+              (cons (* USD->EURO us3)
+               (cons (* USD->EURO us2)
+                (cons (* USD->EURO us1) '()))))
+
+(define (convert-euro* r lou)
+  (cond
+    [(empty? lou) '()]
+    [(cons? lou) (cons (usd->euro* r (first lou))
+                       (convert-euro (rest lou)))]))
+
+
+; List-of-numbers -> List-of-numbers
+; computes a list of euro amounts from given
+; list of us-dollar amounts
+
+(check-expect (convert-euro lou0) '())
+(check-expect (convert-euro lou3)
+              (cons (* USD->EURO us3)
+               (cons (* USD->EURO us2)
+                (cons (* USD->EURO us1) '()))))
+
+(define (convert-euro lou)
+  (cond
+    [(empty? lou) '()]
+    [(cons? lou) (cons (usd->euro (first lou))
+                       (convert-euro (rest lou)))]))
+
+
+; Number -> Number
+; computes euro amount based on the given usd amount u
+; and rate r
+
+(check-expect (usd->euro* USD->EURO us2) (* USD->EURO us2))
+
+(define (usd->euro* r u)
+  (* r u))
+
+
+; Number -> Number
+; computes euro amount of given us-dollar u
+
+(check-expect (usd->euro us2) (* USD->EURO us2))
+
+(define (usd->euro u)
+  (* USD->EURO u))

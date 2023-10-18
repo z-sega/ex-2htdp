@@ -1,0 +1,46 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-163) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex163
+;; Design convertFC.
+;; The function converts a list of measurements in
+;; Fahrenheit to a list of Celsius measurements.
+
+
+(define f1 40)
+(define f2 100)
+
+
+; A List-of-numbers is one of:
+; - '()
+; - (cons Number List-of-numbers)
+(define lof0 '())
+(define lof1 (cons f1 lof0))
+(define lof2 (cons f2 lof1))
+
+
+; List-of-numbers -> List-of-numbers
+; computes a list of celsius corresponding to the
+; given list of fahrenheit values
+
+(check-expect (convertFC lof0) '())
+(check-within (convertFC lof2)
+              (cons 37.778
+               (cons 4.444 '()))
+              0.01)
+                     
+(define (convertFC lof)
+  (cond
+    [(empty? lof) '()]
+    [(cons? lof) (cons (f->c (first lof))
+                       (convertFC (rest lof)))]))
+
+
+; Number -> Number
+; computes celsius from given fahrenheit f
+
+(check-within (f->c f2) 37.778 0.01)
+
+(define (f->c f)
+  (* (- f 32)
+     (/ 5 9)))

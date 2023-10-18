@@ -1,0 +1,101 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-165) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-165
+;; Design the function subst-robot, which consumes
+;; a list of toy descriptions (one-word strings) and
+;; replaces all occurences of "robot" with "r2d2";
+;; all other descriptions remain the same.
+
+
+(define s1 "")
+(define s2 "some")
+(define s3 "robot")
+(define s4 "bat")
+
+
+; A List-of-strings is one of:
+; - '()
+; - (cons String List-of-strings)
+(define los0 '())
+(define los1 (cons s1 los0))
+(define los2 (cons s2 los1))
+(define los3 (cons s3 los2))
+(define los4 (cons s4 los3))
+
+
+; List-of-strings -> List-of-strings
+; Consume a List-of-strings los, replaces
+; all occurences of robot with r2d2 and returns
+; a new list
+
+(check-expect (subst-robot los0) '())
+(check-expect (subst-robot los2) los2)
+(check-expect (subst-robot los4)
+              (cons s4
+                    (cons "r2d2"
+                          (cons s2
+                                (cons s1 '())))))
+
+(define (subst-robot los)
+  (cond
+    [(empty? los) '()]
+    [(cons? los) (cons (robot->r2d2 (first los))
+                       (subst-robot (rest los)))]))
+
+
+; String -> String
+; Return "r2d2" if the given string s is "robot"
+; else return the given string
+
+(check-expect (robot->r2d2 s1) s1)
+(check-expect (robot->r2d2 s2) s2)
+(check-expect (robot->r2d2 s3) "r2d2")
+
+(define (robot->r2d2 s)
+  (if (string=? "robot" s)
+      "r2d2"
+      s))
+
+
+;; Generalize subst-robot to substitute. The latter
+;; consumes two strings, called new and old, and a
+;; list of strings. It produces a new list of strings
+;; by substituting all occurences of old with new.
+
+
+
+; List-of-strings String String -> List-of-strings
+; Consume a List-of-strings los, replaces
+; all occurences of old with new and returns
+; a new list
+
+(check-expect (substitute "bat" "gotham" los0) '())
+(check-expect (substitute "bat" "gotham" los2) los2)
+(check-expect (substitute "bat" "gotham" los4)
+              (cons (old->new "bat" "gotham" "bat")
+                    (cons s3
+                          (cons s2
+                                (cons s1 '())))))
+
+(define (substitute old new los)
+  (cond
+    [(empty? los) '()]
+    [(cons? los) (cons (old->new old new (first los))
+                       (substitute old new (rest los)))]))
+
+
+; String -> String
+; Return new if the given string s is old
+; else return the given string
+
+(check-expect (old->new "bat" "gotham" s1) s1)
+(check-expect (old->new "bat" "gotham" s2) s2)
+(check-expect (old->new "bat" "gotham" s4) "gotham")
+
+(define (old->new old new s)
+  (if (string=? old s)
+      new
+      s))
+
+

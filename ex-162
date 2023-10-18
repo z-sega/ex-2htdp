@@ -1,0 +1,58 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-162) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-162
+;; No employee could possibly work more than 100 hours
+;; per week. To protect the company against fraud, the
+;; function should check that no item of the input
+;; list of wage* exceeds 100. If one of them does, the
+;; function should immediately signal an error.
+;; How do we have to change the function in fig.64 if
+;; we want to perform this basic reality check?
+
+
+(define HOURLY-WAGE 14)
+(define MAX-HOURS 100)
+
+(define ERR-MSG
+  (string-append
+   "fraud alert: hours cannot exceed "
+   (number->string MAX-HOURS)))
+
+; A List-of-numbers is one of:
+; - '()
+; - (cons Number List-of-numbers)
+(define low0 '())
+(define low1 (cons 28 low0))
+(define low2 (cons 4 (cons 2 '())))
+
+
+; List-of-numbers -> List-of-numbers
+; computes the weekly wages for the weekly hours
+
+(check-expect (wage* low0) low0)
+(check-expect (wage* low1) (cons 392 '()))
+(check-expect (wage* low2)
+              (cons 56 (cons 28 '())))
+(check-error (wage*
+              (cons 46 (cons 240 '())))
+             ERR-MSG)
+
+(define (wage* whrs)
+  (cond
+    [(empty? whrs) '()]
+    [(cons? whrs) (cons (if (> (first whrs) MAX-HOURS)
+                         (error ERR-MSG)
+                         (wage (first whrs)))
+                        (wage* (rest whrs)))]))
+
+
+; Number -> Number
+; computes the wage for h hours of work
+
+(check-expect (wage 2) (* HOURLY-WAGE 2))
+
+(define (wage h)
+  (* HOURLY-WAGE h))
+
+

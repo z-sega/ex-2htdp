@@ -1,0 +1,55 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-154) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+
+(define-struct layer [color doll])
+; An RD (short for Russian doll) is one of:
+; - String
+; - (make-layer String RD)
+(define l1 "red")
+(define l2 (make-layer "green" l1))
+(define l3 (make-layer "yellow" l2))
+                       
+
+; RD -> Number
+; how many dolls are part of an-rd
+
+(check-expect (depth l1) 1)
+(check-expect (depth l2) 2)
+(check-expect (depth l3) 3)
+
+(define (depth an-rd)
+  (cond
+    [(string? an-rd) 1]
+    [(layer? an-rd)
+     (+
+      1
+      (depth (layer-doll an-rd)))]))
+
+;; ex-154
+;; Design the function colors. It consumes a
+;; Russian doll and produces a string of all
+;; colors, separated by a comma and a space.
+;; Thus our example should produce:
+
+; "yellow, green, red"
+
+(define DELIMITER ", ")
+
+; RD -> String
+; Returns all the colors of dolls in given RD
+; an-rd separated by a comma
+
+(check-expect (colors l1) "red")
+(check-expect (colors l2) "green, red")
+(check-expect (colors l3) "yellow, green, red")
+
+(define (colors an-rd)
+  (cond
+    [(string? an-rd) an-rd]
+    [(layer? an-rd)
+     (string-append
+      (layer-color an-rd)
+      DELIMITER
+      (colors (layer-doll an-rd)))]))
+          
