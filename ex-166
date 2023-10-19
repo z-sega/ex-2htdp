@@ -1,0 +1,135 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-166) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-166
+;; The wage*.v2 function consumes a list of work records
+;; and produces a list of numbers. Of course, functions
+;; may also produce lists of structures.
+;;
+;; 1.
+;; Develop a data representation for paychecks. Assume that
+;; a paycheck contains two distinctive pieces of
+;; information: the employee's name and an amount. Then
+;; design the function wage*.v3. It consumes a list of work
+;; records and computes a list of paychecks from it, one
+;; per record.
+;;
+;; 2.
+;; In reality, a paycheck also contains an employee number.
+;; Develop a data representation for employee information
+;; and change the data definition for work records so that
+;; it uses employee information and not just a string for
+;; the employee's name. Also change your data representation
+;; of paychecks so that is contains an employee's name and
+;; number, too. Finally, design wage*.v4, a function that
+;; maps list of revised work records to lists of revised
+;; paychecks.
+
+
+
+;; Instead of numbers, we use structure that represent
+;; employees plus their work hours and pay rates:
+
+
+(define-struct EmployeeInfo [name number])
+; An EmployeeInfo is a structure:
+;   (make-EmployeeInfo String Number)
+; *interp.*
+; (make-EmployeeInfo na nu)
+; describes employee number nu, named na
+(define e1 (make-EmployeeInfo "Robby" 1))
+(define e2 (make-EmployeeInfo "Matthew" 2))
+(define e3 (make-EmployeeInfo "Paul" 3))
+(define e4 (make-EmployeeInfo "Jenny" 4))
+
+
+(define-struct Work [employeeInfo rate hours])
+; A (piece of) Work is a structure:
+;   (make-Work EmployeeInfo Number Number)
+; *interpretation* (make-Work i r h) combines the
+; employee-info i with the pay rate r
+; and the number of hours h
+(define w1 (make-Work e1 11.95 39))
+(define w2 (make-Work e2 12.95 45))
+(define w3 (make-Work e3 24.90 30))
+(define w4 (make-Work e4 30.25 20))
+
+
+; Low (short for list of works) is one of:
+; - '()
+; - (cons Work Low)
+; *interp.* an instance of Low represents the
+; hours worked for a number of employees
+(define low0 '())
+(define low1 (cons w1 low0))
+(define low2 (cons w2 low1))
+(define low3 (cons w3 low2))
+(define low4 (cons w4 low3))
+
+
+(define-struct Paycheck [employeeInfo amount])
+; A Paycheck is a structure:
+;   (make-Paycheck EmployeeInfo Number)
+; *interp.*
+; (make-Paycheck i w) describes a paycheck
+; for an employee whose information is i,
+; for the amount w
+(define p1 (make-Paycheck e1 (* 11.95 39)))
+(define p2 (make-Paycheck e2 (* 12.95 45)))
+
+
+; Lop (short for list of Paycheck) is one of:
+; - '()
+; - (cons Paycheck Lop)
+(define lop0 '())
+(define lop1 (cons p1 lop0))
+(define lop2 (cons p2 lop1))
+
+
+; Low -> Lop
+; computes the paychecks for the given records
+
+(check-expect (wage*.v4 low0) lop0)
+(check-expect (wage*.v4 low1) lop1)
+              
+(define (wage*.v4 an-low)
+  (cond
+    [(empty? an-low) '()]
+    [(cons? an-low) (cons (create-paycheck (first an-low))
+                          (wage*.v4 (rest an-low)))]))
+
+
+; Low -> List-of-numbers
+; computes the weekly wages for the given records
+
+(check-expect (wage*.v2 low0) '())
+(check-expect (wage*.v2 low1)
+              (cons (* 11.95 39) '()))
+
+(define (wage*.v2 an-low)
+  (cond
+    [(empty? an-low) '()]
+    [(cons? an-low) (cons (wage.v2 (first an-low))
+                          (wage*.v2 (rest an-low)))]))
+
+
+; Work -> Paycheck
+; Returns a Paycheck from the given Work
+
+(check-expect (create-paycheck w1) p1)
+(check-expect (create-paycheck w2) p2)
+
+(define (create-paycheck w)
+  (make-Paycheck (Work-employeeInfo w)
+                 (wage.v2 w)))
+                 
+
+; Work -> Number
+; computes the wage for the given work record w
+
+(check-expect (wage.v2 w1) (* 11.95 39))
+
+(define (wage.v2 w)
+  (* (Work-rate w)
+     (Work-hours w)))
+  

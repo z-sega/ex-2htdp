@@ -1,0 +1,74 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-170) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-170
+;; Here is one way to represent a phone number:
+
+
+; A Three is a Number between 100 and 999
+(define a1 713)
+(define a2 905)
+
+(define s1 963)
+(define s2 543)
+
+
+; A Four is a Number between 1000 and 9999
+(define f1 9674)
+(define f2 3824)
+
+
+(define-struct Phone [area switch four])
+; A Phone is a structure:
+;   (make-Phone Three Three Four)
+(define ph1 (make-Phone a1
+                        s1
+                        f1))
+(define ph2 (make-Phone a2
+                        s2
+                        f2))
+
+
+; A Lop (short for list of Phones) is one of:
+; - '()
+; - (cons Phone Lop)
+(define lop0 '())
+(define lop1 (cons ph1 lop0))
+(define lop2 (cons ph2 lop1))
+
+
+; Lop -> Lop
+; Consumes and produces a Lop; replaces all
+; occurences of area code 713 with 281
+
+(check-expect (replace lop0) '())
+(check-expect (replace lop1)
+              (cons (make-Phone 281
+                                s1
+                                f1)
+                    '()))
+
+(define (replace lop)
+  (cond
+    [(empty? lop) '()]
+    [(cons? lop) (cons (713->281 (first lop))
+                       (replace (rest lop)))]))
+
+
+; Phone -> Phone
+; replaces the area code 713 with 281 in the given Phone p
+
+(check-expect (713->281 ph1)
+              (make-Phone 281
+                          s1
+                          f1))
+(check-expect (713->281 ph2) ph2)
+
+(define (713->281 p)
+  (make-Phone
+   (if (eq? (Phone-area p) 713)
+       281
+       (Phone-area p))
+   (Phone-switch p)
+   (Phone-four p)))
+       

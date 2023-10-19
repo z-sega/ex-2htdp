@@ -1,0 +1,37 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-167) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-167
+;; Design the function sum, which consumes a list of
+;; Posns and produces the sum of all of its x-coordinates
+
+
+(define p1 (make-posn 10 20))
+(define p2 (make-posn 20 40))
+(define p3 (make-posn 30 60))
+(define p4 (make-posn 40 80))
+
+
+; A Lop (short of list of Posn) is one of:
+; - '()
+; - (cons Posn Lop)
+(define lop0 '())
+(define lop1 (cons p1 lop0))
+(define lop2 (cons p2 lop1))
+(define lop3 (cons p3 lop2))
+(define lop4 (cons p4 lop3))
+
+
+; Lop -> Number
+; computes the sum of all x-coordinates in the given
+; Lop lop
+
+(check-expect (sum lop0) 0)
+(check-expect (sum lop1) 10)
+(check-expect (sum lop4) 100)
+
+(define (sum lop)
+  (cond
+    [(empty? lop) 0]
+    [(cons? lop) (+ (posn-x (first lop))
+                      (sum (rest lop)))]))

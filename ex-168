@@ -1,0 +1,56 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-168) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-168
+;; Design the function translate. It consumes
+;; and produces lists of Posns. For each (make-posn x y)
+;; in the former, the latter contains (make-posn x (+ y 1)).
+;; We borrow the word "translate" from geometry, where the
+;; movement of a point by a constant distance along a
+;; straight line is called a translation.
+
+
+(define p1 (make-posn 10 20))
+(define p2 (make-posn 20 40))
+(define p3 (make-posn 30 60))
+(define p4 (make-posn 40 80))
+
+
+; A Lop (short of list of Posn) is one of:
+; - '()
+; - (cons Posn Lop)
+(define lop0 '())
+(define lop1 (cons p1 lop0))
+(define lop2 (cons p2 lop1))
+(define lop3 (cons p3 lop2))
+(define lop4 (cons p4 lop3))
+
+
+; Lop -> Lop
+; return a list of posns with 1 unit y translation
+; from the given list of posns
+
+(check-expect (translate lop0) '())
+(check-expect (translate lop1)
+              (cons (make-posn (posn-x p1)
+                               (+ (posn-y p1) 1))
+                    '()))
+
+(define (translate lop)
+  (cond
+    [(empty? lop) '()]
+    [(cons? lop) (cons (translate-y (first lop) 1)
+                       (translate (rest lop)))]))
+              
+
+; Posn Number -> Posn
+; translate given posn p vertically by n 
+
+(check-expect (translate-y p1 2)
+              (make-posn (posn-x p1)
+                         (+ (posn-y p1) 2)))
+
+(define (translate-y p n)
+  (make-posn (posn-x p)
+             (+ (posn-y p) n)))
+  

@@ -1,0 +1,53 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname structures-in-lists) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; Instead of numbers, we use structure that represent
+;; employees plus their work hours and pay rates:
+
+
+(define-struct Work [employee rate hours])
+; A (piece of) Work is a structure:
+;   (make-Work String Number Number)
+; *interpretation* (make-Work n r h) combines the
+; name with the pay rate r and the number of hours h
+(define w1 (make-Work "Robby" 11.95 39))
+(define w2 (make-Work "Matthew" 12.95 45))
+(define w3 (make-Work "Paul" 24.90 30))
+(define w4 (make-Work "Jenny" 30.25 20))
+
+
+; Low (short for list of works) is one of:
+; - '()
+; - (cons Work Low)
+; *interp.* an instance of Low represents the
+; hours worked for a number of employees
+(define low0 '())
+(define low1 (cons w1 low0))
+(define low2 (cons w2 low1))
+(define low3 (cons w3 low2))
+(define low4 (cons w4 low3))
+
+
+; Low -> List-of-numbers
+; computes the weekly wages for the given records
+
+(check-expect (wage*.v2 low0) '())
+(check-expect (wage*.v2 low1)
+              (cons (* 11.95 39) '()))
+
+(define (wage*.v2 an-low)
+  (cond
+    [(empty? an-low) '()]
+    [(cons? an-low) (cons (wage.v2 (first an-low))
+                          (wage*.v2 (rest an-low)))]))
+  
+
+; Work -> Number
+; computes the wage for the given work record w
+
+(check-expect (wage.v2 w1) (* 11.95 39))
+
+(define (wage.v2 w)
+  (* (Work-rate w)
+     (Work-hours w)))
+  

@@ -1,0 +1,64 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-169) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-169
+;; Design the function legal. Like translate from
+;; ex-168, the function consumes and produces a list of
+;; Posns. The result contains all those Posns whose
+;; x-coordinates are between 0 and 100 and whose
+;; y-coordinates are between 0 and 200
+
+
+(define X-MIN 0)
+(define X-MAX 100)
+(define Y-MIN 0)
+(define Y-MAX 200)
+
+(define p1 (make-posn 10 20))
+(define p2 (make-posn 20 40))
+(define pErr1 (make-posn 150 60))
+(define pErr2 (make-posn 40 250))
+
+
+; A Lop (short of list of Posn) is one of:
+; - '()
+; - (cons Posn Lop)
+(define lop0 '())
+(define lop1 (cons p1 lop0))
+(define lop2 (cons p2 lop1))
+(define lopErr1 (cons pErr1 lop2))
+(define lopErr2 (cons pErr2 lopErr1))
+
+
+; Lop -> Lop
+; Returns a new list like the given Lop
+; without illegal posns
+
+(check-expect (legal lop0) '())
+(check-expect (legal lopErr1) lop2)
+(check-expect (legal lopErr2) lop2)
+
+(define (legal lop)
+  (cond
+    [(empty? lop) '()]
+    [(cons? lop) (if (legal-posn? (first lop))
+                     (cons (first lop)
+                           (legal (rest lop)))
+                     (legal (rest lop)))]))
+     
+
+; Posn -> Boolean
+; Returns #t if the given Posn p is legal
+; legal Posns are
+; x: [X-MIN, X-MAX]
+; y: [Y-MIN, Y-MAX]
+
+(check-expect (legal-posn? p1) #t)
+(check-expect (legal-posn? pErr1) #f)
+
+(define (legal-posn? p)
+  (and (and (>= (posn-x p) X-MIN)
+            (<= (posn-x p) X-MAX))
+       (and (>= (posn-y p) Y-MIN)
+            (<= (posn-y p) Y-MAX))))
+  
