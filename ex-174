@@ -1,0 +1,153 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-174) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/batch-io)
+
+;; ex-174
+;; Design a program that encodes text files numerically.
+;; Each letter in a word should be encoded as a numeric
+;; three-letter string with a value between 0 and 256.
+;; Fig. 69 shows our encoding function for single letters.
+;; Before you start, explain these functions.
+
+
+; 1String -> String
+; converts the given 1String to a 3-letter numeric String
+
+(check-expect (encode-letter "z") (code1 "z"))
+(check-expect (encode-letter "\t")
+              (string-append "00" (code1 "\t")))
+(check-expect (encode-letter "a")
+              (string-append "0" (code1 "a")))
+
+(define (encode-letter s)
+  (cond
+    [(>= (string->int s) 100) (code1 s)]
+    [(< (string->int s) 10) (string-append "00" (code1 s))]
+    [(< (string->int s) 100) (string-append "0" (code1 s))]))
+
+
+; 1String -> String
+; converts the given 1String into a String
+
+(check-expect (code1 "z") "122")
+
+(define (code1 c)
+  (number->string (string->int c)))
+
+
+;; *Hints*
+;; 1. Use read-words/line to preserve the organization of
+;; the file into lines and words.
+;; 2. Read up on explode again.
+
+
+; String -> List-of-EncodedLine
+; Encodes the given file f
+
+(define (main f)
+  (encode
+   (read-words/line f)))
+
+
+; A Letter is a 1String
+(define l1 "a")
+(define l2 "b")
+(define l3 "c")
+
+; A List-of-1String is one of:
+; - '()
+; - (cons 1String List-of-1String)
+(define lo1S0 '())
+(define lo1S1 (cons l1
+                    (cons l2
+                          (cons l3 '()))))
+
+; A Word is a String
+(define w1 "abc")
+(define w2 "def")
+
+; A Line is a List-of-Word
+; A List-of-Word is one of:
+; - '()
+; - (cons Word List-of-Word)
+(define low0 '())
+(define low1 (cons w1 low0))
+(define low2 (cons w2 low1))
+
+; A List-of-Line is one of:
+; - '()
+; - (cons Line List-of-Line)
+(define lol0 '())
+(define lol1 (cons low1 lol0))
+(define lol2 (cons low2 lol1))
+
+; An EncodedLetter is a String
+(define el1 (encode-letter l1))
+(define el2 (encode-letter l2))
+(define el3 (encode-letter l3))
+;; abc -> el1,el2,el3
+
+; An EncodedWord is a List-of-EncodedLetter
+; A List-of-EncodedLetter is one of:
+; - '()
+; - (cons EncodedLetter List-of-EncodedLetter)
+(define Ew0 '())
+(define Ew1 (cons el1
+                  (cons el2
+                        (cons el3 '()))))
+
+; An EncodedLine is a List-of-EncodedWord
+; A List-of-EncodedWord is one of:
+; - '()
+; - (cons EncodedWord List-of-EncodedWord)
+(define El0 '())
+(define El1 (cons Ew1 '()))
+
+
+; A List-of-EncodedLine is a one of:
+; - '()
+; - (cons EncodedLine List-of-EncodedLine)
+(define lEl0 '())
+(define lEl1 (cons El1 '()))
+
+
+; List-of-Line -> List-of-EncodedLine
+; Encodes the given List-of-Line lol and returns it
+
+(check-expect (encode lol0) '())
+(check-expect (encode lol1) lEl1)
+
+(define (encode lol)
+  (cond
+    [(empty? lol) '()]
+    [(cons? lol) (cons (encode-line (first lol))
+                      (encode (rest lol)))]))
+
+
+; List-of-Word -> List-of-EncodedWord
+; Encodes the given List-of-Word low and returns it
+
+(check-expect (encode-line low0) '())
+(check-expect (encode-line low1) El1)
+
+(define (encode-line low)
+  (cond
+    [(empty? low) '()]
+    [(cons? low) (cons (encode-word (explode (first low)))
+                       (encode-line (rest low)))]))
+
+
+; List-of-1String -> EncodedWord
+; Encodes the given List-of-1String and returns an
+; EncodedWord
+
+(check-expect (encode-word '()) '())
+(check-expect (encode-word (explode w1)) Ew1)
+
+(define (encode-word lo1S)
+  (cond
+    [(empty? lo1S) '()]
+    [(cons? lo1S) (cons (encode-letter (first lo1S))
+                        (encode-word (rest lo1S)))]))
+

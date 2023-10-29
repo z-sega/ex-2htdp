@@ -1,0 +1,175 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-173) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/batch-io)
+
+;; ex-173
+;; Design a program that removes all articles from
+;; a text file. The program consumes the name n of a
+;; file, reads the file, removes the articles, and
+;; writes the result out to a file whose name is the
+;; result of concatenating "no-articles-" with n.
+;; For this exercise, an article is one of the following
+;; three words:
+;; "a", "an", and "the".
+
+(define FILE-DIR "files")
+(define PATH-DLMTR "/")
+(define FILE-PREFIX "no-articles-")
+
+
+(define A "a")
+(define AN "an")
+(define THE "the")
+
+; An Article is one of:
+; - A
+; - AN
+; - THE
+
+
+; A List-of-numbers is one of:
+; - '()
+; - (cons Number List-of-numbers)
+
+
+; A List-of-strings is one of:
+; - '()
+; - (cons String List-of-strings)
+; *interpretation* represents a list of words
+(define lineA (cons "The"
+                    (cons "greeting:"
+                          (cons "hello"
+                                (cons "world" '())))))
+(define lineAA (cons "This"
+                    (cons "greeting:"
+                          (cons "the"
+                                (cons "hello"
+                                      (cons "world" '()))))))
+(define lineN (cons "greeting:"
+                    (cons "hello"
+                          (cons "world" '()))))
+(define lineNN (cons "This"
+                    (cons "greeting:"
+                          (cons "hello"
+                                (cons "world" '())))))
+(define line1 '())
+
+
+; A LN (short for List of lists of strings) is one of:
+; - '()
+; - (cons List-of-string LN)
+; *interpretation* represents a list of lines
+; where each line is a list of words
+(define lls0 '())
+(define llsA (cons lineA
+                   (cons line1 '())))
+(define llsAA (cons line1
+                    (cons lineAA '())))
+(define llsN (cons lineN
+                   (cons line1 '())))
+(define llsNN (cons line1
+                   (cons lineNN '())))
+
+
+; String -> String
+; Reads txt file f, removes all articles and writes
+; the result out to file no-articles-f
+(define (main f)
+  (write-file (build-filename f)
+              (collapse
+               (remove-articles
+                (read-words/line f)))))
+
+
+; String -> String
+; Returns the given String s with "no-articles-" prefix
+
+(check-expect (build-filename "test") "files/no-articles-test")
+
+(define (build-filename s)
+  (string-append FILE-DIR PATH-DLMTR FILE-PREFIX s))
+
+
+(define WORD-DELIMITER " ")
+(define LINE-DELIMITER "\n")
+
+
+; LN -> String
+; converts given LN (short for list of list of strings) lls
+; into a String
+
+;(check-expect (collapse lls0) "")
+;(check-expect (collapse lls1) "hello world\n")
+
+(define (collapse lls)
+  (cond
+    [(empty? lls) ""]
+    [(cons? lls) (string-append (los->string (first lls))
+                                (if (empty? (rest lls))
+                                    ""
+                                    LINE-DELIMITER)
+                                (collapse (rest lls)))]))
+
+
+; List-of-strings -> String
+; converts given List-of-strings los into a string
+
+;(check-expect (los->string line1) "")
+;(check-expect (los->string line0) "hello world")
+
+(define (los->string los)
+  (cond
+   [(empty? los) ""]
+   [(cons? los) (string-append (first los)
+                               (if (empty? (rest los))
+                                   ""
+                                   WORD-DELIMITER)
+                               (los->string (rest los)))]))
+
+
+; LN -> LN
+; Removes all Articles from given LN lls and returns
+; processed lls (without Articles)
+
+(check-expect (remove-articles lls0) '())
+(check-expect (remove-articles llsA) llsN)
+(check-expect (remove-articles llsAA) llsNN)
+
+(define (remove-articles lls)
+  (cond
+    [(empty? lls) '()]
+    [(cons? lls) (cons (articles->none (first lls))
+                       (remove-articles (rest lls)))]))
+
+
+; List-of-strings -> List-of-strings
+; Remove all Articles from given List-of-strings ls
+; returns the processed ls (without Articles)
+
+(check-expect (articles->none lineA) lineN)
+(check-expect (articles->none lineAA) lineNN)
+(check-expect (articles->none line1) '())
+
+(define (articles->none ls)
+  (cond
+    [(empty? ls) '()]
+    [(cons? ls) (if (is-article? (first ls))
+                    (articles->none (rest ls))
+                    (cons (first ls) (articles->none (rest ls))))]))
+     
+
+; String -> Boolean
+; Returns #t if the given String s is an Article
+
+(check-expect (is-article? A) #t)
+(check-expect (is-article? AN) #t)
+(check-expect (is-article? THE) #t)
+(check-expect (is-article? "") #f)
+(check-expect (is-article? "so") #f)
+
+(define (is-article? s)
+  (or (string=? A (string-downcase s))
+      (string=? AN (string-downcase s))
+      (string=? THE (string-downcase s))))
+  

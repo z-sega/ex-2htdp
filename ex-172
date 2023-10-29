@@ -1,0 +1,74 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-172) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/batch-io)
+
+;; ex-172
+;; Design the function collapse, which converts a list
+;; of lines into a string. The strings should be separated
+;; by blank spaces (" "). The lines should be separated
+;; with a newline ("\n").
+
+(define WORD-DELIMITER " ")
+(define LINE-DELIMITER "\n")
+
+
+; A List-of-numbers is one of:
+; - '()
+; - (cons Number List-of-numbers)
+
+
+; A List-of-strings is one of:
+; - '()
+; - (cons String List-of-strings)
+; *interpretation* represents a list of words
+(define line0 (cons "hello"
+                    (cons "world" '())))
+(define line1 '())
+
+
+; A LN (short for List of lists of strings) is one of:
+; - '()
+; - (cons List-of-string LN)
+; *interpretation* represents a list of lines
+; where each line is a list of words
+(define lls0 '())
+(define lls1 (cons line0
+                   (cons line1 '())))
+
+
+; LN -> String
+; converts given LN (short for list of list of strings) lls
+; into a String
+
+(check-expect (collapse lls0) "")
+(check-expect (collapse lls1) "hello world\n")
+
+(define (collapse lls)
+  (cond
+    [(empty? lls) ""]
+    [(cons? lls) (string-append (los->string (first lls))
+                                (if (empty? (rest lls))
+                                    ""
+                                    LINE-DELIMITER)
+                                (collapse (rest lls)))]))
+
+
+; List-of-strings -> String
+; converts given List-of-strings los into a string
+
+(check-expect (los->string line1) "")
+(check-expect (los->string line0) "hello world")
+
+(define (los->string los)
+  (cond
+   [(empty? los) ""]
+   [(cons? los) (string-append (first los)
+                               (if (empty? (rest los))
+                                   ""
+                                   WORD-DELIMITER)
+                               (los->string (rest los)))]))
+
+
+;(write-file "ttt.dat"
+;             (collapse (read-words/line "ttt.txt")))

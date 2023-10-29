@@ -1,0 +1,97 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname first-file-utility) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/batch-io)
+
+
+; String -> String
+; produces the content of file f as a string
+;(define (read-file f) ...)
+
+
+; String -> List-of-string
+; produces the content of file f as a list of strings,
+; one per line
+;(define (read-lines f) ...)
+
+; String -> List-of-string
+; produces the content of file f as a list of strings,
+; one per word
+;(define (read-words f) ...)
+
+; String -> List-of-list-of-string
+; produces the content of file f as a list of list of
+; strings, one list per line and one string per word
+;(define (read-words/line f) ...)
+
+
+; A List-of-numbers is one of:
+; - '()
+; - (cons Number List-of-numbers)
+
+
+; A List-of-strings is one of:
+; - '()
+; - (cons String List-of-strings)
+; *interpretation* represents a list of words
+(define line0 (cons "hello"
+                    (cons "world" '())))
+(define line1 '())
+
+
+; A LN (short for List of lists of strings) is one of:
+; - '()
+; - (cons List-of-string LN)
+; *interpretation* represents a list of lines
+; where each line is a list of words
+(define lls0 '())
+(define lls1 (cons line0
+                   (cons line1 '())))
+
+
+; LN -> List-of-numbers
+; determines the number of words on each line
+
+(check-expect (words-on-line lls0) '())
+(check-expect (words-on-line lls1) (cons 2
+                                         (cons 0 '())))
+
+(define (words-on-line lls)
+  (cond
+    [(empty? lls) '()]
+    [(cons? lls) (cons (words# (first lls))
+                       (words-on-line (rest lls)))]))
+
+
+; List-of-strings -> Number
+; counts the number of words on los
+
+(check-expect (words# line1) 0)
+(check-expect (words# line0) 2)
+
+(define (words# alos)
+  (cond
+   [(empty? alos) 0]
+   [(cons? alos) (+ 1
+                   (words# (rest alos)))]))
+
+
+; LN -> List-of-numbers
+; determines the number of words on each line
+
+(check-expect (words-on-line.v2 lls0) '())
+(check-expect (words-on-line.v2 lls1) (cons 2
+                                         (cons 0 '())))
+
+(define (words-on-line.v2 lls)
+  (cond
+    [(empty? lls) '()]
+    [(cons? lls) (cons (length (first lls)) ; using BSL built-in
+                       (words-on-line.v2 (rest lls)))]))
+
+
+; String -> List-of-numbers
+; counts the words on each line in the given file
+(define (file-statistic file-name)
+  (words-on-line
+   (read-words/line file-name)))

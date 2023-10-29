@@ -1,0 +1,128 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-175) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/batch-io)
+
+;; ex-175
+;; Design a BSL program that simulates the Unix command wc.
+;; The purpose of the command is to count the number of
+;; 1Strings, words, and lines in a given file. That is,
+;; the command consumes the name of a file and produces
+;; a value that consists of three numbers.
+
+
+(define-struct Filestat [letters# words# lines#])
+; A Filestat is a structure:
+;   (make-Filestat Number Number Number)
+; *interp.* (make-Filestat le w li) describes
+; the statistics for a file with le 1Strings,
+; w words, and li lines
+(define fs0 (make-Filestat 0 0 0))
+(define fs1 (make-Filestat 9 3 3))
+
+
+; A Line is a List-of-Word
+; A List-of-Word is one of:
+; - '()
+; - (cons Word List-of-Word)
+(define low0 '())
+(define low1 (cons "is"
+                   (cons "looking"
+                         (cons "at"
+                               (cons "you" '())))))
+(define low2 (cons "something"
+                   (cons "over"
+                         (cons "there" '()))))
+
+; A List-of-Line is one of:
+; - '()
+; - (cons Line List-of-Line)
+(define lol0 '())
+(define lol1 (cons low1 '()))
+(define lol2 (cons low2 lol1))
+
+
+
+; String -> Filestat
+; Computes the Filestat for the file f
+
+(define (main f)
+  (get-stat
+   (read-words/line f)))
+
+
+; List-of-Line -> Filestat
+; Computes a Filestat for lol
+
+(check-expect (get-stat lol0) (make-Filestat 0 0 0))
+(check-expect (get-stat lol1) (make-Filestat 14 4 1))
+
+(define (get-stat lol)
+  (cond
+    [(empty? lol) (make-Filestat 0 0 0)]
+    [(cons? lol) (make-Filestat (letter-count lol)
+                                (word-count lol)
+                                (length lol))]))
+
+
+; List-of-Line -> Number
+; Computes the number of letters for lol
+
+(check-expect (letter-count lol0) 0)
+(check-expect (letter-count lol1) 14)
+
+(define (letter-count lol)
+  (cond
+    [(empty? lol) 0]
+    [(cons? lol) (+ (letter-count* (first lol))
+                    (letter-count (rest lol)))]))
+
+
+; List-of-String -> Number
+; Computes the number of letters for los
+
+(check-expect (letter-count* low0) 0)
+(check-expect (letter-count* low1) 14)
+
+(define (letter-count* los)
+  (cond
+    [(empty? los) 0]
+    [(cons? los) (+ (string-length (first los))
+                    (letter-count* (rest los)))]))
+
+
+; List-of-Line -> Number
+; Computes the number of words for lol
+
+(check-expect (word-count lol0) 0)
+(check-expect (word-count lol1) 4)
+
+(define (word-count lol)
+  (cond
+    [(empty? lol) 0]
+    [(cons? lol) (+ (length (first lol))
+                    (word-count (rest lol)))]))
+
+
+
+;; Why might your computer's wc give a slightly different
+;; result from your code?
+
+;; ---------------
+;; ayo:~/Playground/program-design$ wc ttt.txt
+;; 13  33 184 ttt.txt
+
+;; > (main "ttt.txt")
+;; (make-Filestat 148 33 13)
+;; ---------------
+
+;; wc --help says that the program prints newline, word and
+;; byte counts for each FILE.
+
+;; Maybe using the -c option will give the same output
+;; as in character count instead of the default byte count.
+
+;; Also, though trivial, the arrangement of the count is
+;; different. Unlike wc, this program will output letter,
+;; word, and [new]line count.
+
