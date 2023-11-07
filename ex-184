@@ -1,0 +1,24 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-184) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-184
+;; Determine the values of the following expressions:
+;; 1.
+(define l1 (list (string=? "a" "b") #false))
+
+;; 2.
+(define l2 (list (+ 10 20) (* 10 20) (/ 10 20)))
+
+;; 3.
+(define l3 (list "dana" "jane" "mary" "laura"))
+
+;; Use check-expect to express your answers.
+
+(define a1 (list #false #false))
+(check-expect l1 a1)
+
+(define a2 (list 30 200 0.5))
+(check-expect l2 a2)
+
+(define a3 (list "dana" "jane" "mary" "laura"))
+(check-expect l3 a3)

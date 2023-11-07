@@ -1,0 +1,49 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-183) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-183
+;; On some occasions lists are formed with
+;; cons and list.
+
+;; 1.
+(define l1 (cons "a" (list 0 #false)))
+
+;; 2.
+(define l2 (list (cons 1 (cons 13 '()))))
+
+;; 3.
+(define l3 (cons (list 1 (list 13 '())) '()))
+
+;; 4.
+(define l4 (list '() '() (cons 1 '())))
+
+;; 5.
+(define l5 (cons "a"
+                 (cons (list 1)
+                       (list #false '()))))
+
+
+;; Reformulate each of the following expressions using
+;; only cons or only list.
+;; Use check-expect to check your answers.
+
+(define a1 (list "a" 0 #false))
+(check-expect l1 a1)
+
+(define a2 (list (list 1 13)))
+(check-expect l2 a2)
+
+(define a3 (list (list 1 (list 13 '()))))
+(check-expect l3 a3)
+
+(define a4 (list (list )
+                 (list )
+                 (list 1)))
+(check-expect l4 a4)
+
+(define a5 (list "a"
+                 (list 1)
+                 #false
+                 (list )))
+(check-expect l5 a5)
+

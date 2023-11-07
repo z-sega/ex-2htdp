@@ -1,0 +1,42 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-181) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-181
+;; Use list to construct the equivalent of these lists:
+;; 1.
+(define l1 (cons "a" (cons "b" (cons "c" (cons "d" '())))))
+
+(define a1 (list "a" "b" "c" "d"))
+(check-expect l1 a1)
+
+;; 2.
+(define l2 (cons (cons 1
+                       (cons 2 '())) '()))
+
+(define a2 (list (list 1 2)))
+(check-expect l2 a2)
+ 
+;; 3.
+(define l3 (cons "a"
+                 (cons (cons 1 '())
+                       (cons #false '()))))
+
+(define a3 (list "a" (list 1) #false))
+(check-expect l3 a3)
+
+;; 4.
+(define l4 (cons (cons "a"
+                       (cons 2 '()))
+                 (cons "hello" '())))
+
+(define a4 (list (list "a" 2) "hello"))
+(check-expect l4 a4)
+
+;; extra
+
+(define lextra (cons (cons 1 (cons 2 '()))
+                     (cons (cons 2 '())
+                           '())))
+
+(define aextra (list (list 1 2) (list 2)))                     
+(check-expect lextra aextra)
