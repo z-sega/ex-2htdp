@@ -1,0 +1,76 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-188) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-188
+;; Design a program that sorts lists of emails
+;; by date:
+
+(define-struct Email [from date message])
+; An Email is a structure:
+;   (make-Email String Number String)
+; *interpretation* (make-Email f d m) represents
+; text m, sent by f, d seconds after the beginning
+; of time
+(define m1 (make-Email "Ariel"
+                       1000
+                       "Something here is fishy"))
+(define m2 (make-Email "Heather"
+                       2300
+                       "I have no clue"))
+(define m3 (make-Email "Sic"
+                       5000
+                       "I have to go in early tomorrow"))
+                       
+;; Also develop a program that sorts lists of email
+;; messages by name. To compare two strings
+;; alphabetically, use the string<? primitive.
+
+; A List-of-Emails is one of:
+; - '()
+; (cons Email List-of-Emails)
+(define l-asc (list m1 m2 m3))
+(define l-desc (list m3 m2 m1))
+
+
+; List-of-Emails -> List-of-Emails
+; rearranges the given Emails l in
+; increasing lexicographical order
+
+(check-expect (sort< '()) '())
+(check-expect (sort< l-asc) l-asc)
+(check-expect (sort< l-desc) l-asc)
+(check-expect (sort< (list m2 m3 m1)) l-asc)
+
+(define (sort< l)
+  (cond
+    [(empty? l) '()]
+    [else (insert (first l) (sort< (rest l)))]))
+
+
+; Email List-of-Emails -> List-of-Emails
+; inserts m in its correct position in the
+; given sorted l
+
+(check-expect (insert m2 '()) (list m2))
+(check-expect (insert m1 (list m2 m3)) (list m1 m2 m3))
+(check-expect (insert m2 (list m1 m3)) (list m1 m2 m3))
+
+(define (insert m l)
+  (cond
+    [(empty? l) (list m)]
+    [else (if (Email< m (first l))
+              (cons m l)
+              (cons (first l) (insert m (rest l))))]))
+
+
+; Email Email -> Boolean
+; returns #t if the given mA is by a
+; sender who's name comes before the
+; sender of mB
+
+(check-expect (Email< m1 m2) #t)
+(check-expect (Email< m2 m1) #f)
+
+(define (Email< mA mB)
+  (string<? (Email-from mA)
+            (Email-from mB)))

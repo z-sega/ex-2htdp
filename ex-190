@@ -1,0 +1,17 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-190) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-190
+;; Design the prefixes function, which consumes a
+;; list of 1Strings and produces the list of all
+;; prefixes. A list p is a prefix of l if p and l
+;; are the same up through all items in p.
+;; For example, (list "a" "b" "c") is a prefix
+;; of itself and (list "a" "b" "c" "d").
+;;
+;; Design the function suffixes, which consumes a
+;; list of 1Strings and produces all suffixes. A
+;; list s is a suffix of l if s and l are the same
+;; from the end, up through all items in s.
+;; For example, (list "b" "c" "d") is a suffix of
+;; itself and (list "a" "b" "c" "d").
