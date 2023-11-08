@@ -1,0 +1,88 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-186) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-186
+;; Take a second look at Intermezzo 1: BSL, the
+;; intermezzo that presents BSL and its ways of
+;; formulating tests. One of the latter is
+;; check-satisfied, which determines whether an
+;; expression satisfies a certain property. Use
+;; sorted>? from exercise 145 to reformulate the
+;; tests for sort> with check-satisfied.
+
+
+; List-of-numbers is one of:
+; - '()
+; - (cons Number List-of-numbers)
+
+
+; List-of-numbers -> Boolean
+; returns #t if the given list l is
+; arranged in descending order
+
+(check-expect (sorted>? '()) #t)
+(check-expect (sorted>? (list 9 5 3)) #t)
+(check-expect (sorted>? (list 9 3 5)) #f)
+(check-expect (sorted>? (list 0 4 5)) #f)
+
+(define (sorted>? l)
+  (cond
+    [(empty? l) #t]
+    [else (and (if (cons? (rest l))
+                   (>= (first l) (first (rest l)))
+                   #t)
+               (sorted>? (rest l)))]))
+
+
+; List-of-numbers -> List-of-numbers
+; rearranges alon in descending order
+
+(check-satisfied (sort> '()) sorted>?)
+(check-satisfied (sort> (list 3 2 1)) sorted>?)
+(check-satisfied (sort> (list 1 2 3)) sorted>?)
+(check-satisfied (sort> (list 12 20 -5)) sorted>?)
+
+(define (sort> alon)
+  (cond
+    [(empty? alon) '()]
+    [else (insert (first alon)
+                  (sort> (rest alon)))]))
+
+
+; Number List-of-numbers -> List-of-numbers
+; inserts n into the sorted list of numbers alon
+
+(check-expect (insert 5 '()) (list 5))
+(check-expect (insert 5 (list 6)) (list 6 5))
+(check-expect (insert 5 (list 4)) (list 5 4))
+(check-expect (insert 12 (list 20 -5))
+              (list 20 12 -5))
+
+(define (insert n alon)
+  (cond
+    [(empty? alon) (list n)]
+    [else (if (>= n (first alon))
+              (cons n alon)
+              (cons (first alon) (insert n (rest alon))))]))
+
+
+;; Now consider this function definition:
+; List-of-numbers -> List-of-numbers
+; produces a sorted version of l
+(define (sort>/bad l)
+  (list 9 8 7 6 5 4 3 2 1 0))
+
+
+;; Can you formulate a test case that shows that
+;; sorted>/bad is not a sorting function? Can
+;; you use check-satisfied to formulate this test case?
+
+(check-satisfied (sort>/bad (list 30 23 -4)) sorted>?)
+
+;; No, this is because the sort>/bad function merely
+;; returns a sorted list, it does not actually sort
+;; its argument. It will always pass the check-satisfied
+;; test when the sorted>? predicate is used
+
+
+

@@ -1,0 +1,71 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-187) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-187
+;; Design a program that sorts lists of game
+;; players by score:
+
+(define-struct gp [name score])
+; A GamePlayer is a structure:
+;   (make-gp String Number)
+; *interpretation* (make-gp p s) represents
+; player p who scored a maximum of s points
+(define gp1 (make-gp "Paul" 90))
+(define gp2 (make-gp "Serena" 60))
+(define gp3 (make-gp "Brian" 30))
+
+
+;; *Hint* Formulate a function that compares
+;; two elements of GamePlayer.
+
+
+; A List-of-gp is one of:
+; - '()
+; - (cons GamePlayer List-of-gp)
+
+
+; List-of-gp -> List-of-gp
+; rearranges given list gpl in descending
+; order (highest gp first)
+
+(check-expect (sort> '()) '())
+(check-expect (sort> (list gp1 gp2 gp3)) (list gp1 gp2 gp3))
+(check-expect (sort> (list gp3 gp2 gp1)) (list gp1 gp2 gp3))
+(check-expect (sort> (list gp2 gp1 gp3)) (list gp1 gp2 gp3))
+
+(define (sort> gpl)
+  (cond
+    [(empty? gpl) '()]
+    [else (insert (first gpl)
+                  (sort> (rest gpl)))]))
+
+
+; GamePlayer List-of-gp -> List-of-gp
+; inserts given gp in correct spot in the given
+; sorted list
+
+(check-expect (insert gp2 '()) (list gp2))
+(check-expect (insert gp2 (list gp1)) (list gp1 gp2))
+(check-expect (insert gp2 (list gp1 gp3)) (list gp1 gp2 gp3))
+
+(define (insert gp gpl)
+  (cond
+    [(empty? gpl) (list gp)]
+    [else (if (gp>= gp (first gpl))
+              (cons gp gpl)
+              (cons (first gpl) (insert gp (rest gpl))))]))
+
+
+; GamePlayer GamePlayer -> Boolean
+; returns #t if gpA has a higher/equal score
+; than/to gpB
+
+(check-expect (gp>= gp1 gp1) #t)
+(check-expect (gp>= gp1 gp2) #t)
+(check-expect (gp>= gp3 gp1) #f)
+
+(define (gp>= gpA gpB)
+  (or (> (gp-score gpA) (gp-score gpB))
+      (= (gp-score gpA) (gp-score gpB))))
+
+
