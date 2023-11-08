@@ -1,0 +1,194 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-176) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+
+;; ex-176
+;; Mathematics teachers may have introduced you to
+;; matrix calculations by now. In principle, matrix
+;; just means rectangle of numbers. Here is one
+;; possible data representation for matrices:
+
+
+; A Row is one of:
+; - '()
+; - (cons Number Row)
+(define row1 (cons 11
+                   (cons 12 '())))
+(define row2 (cons 21
+                   (cons 22 '())))
+
+
+; A Matrix is one of:
+; - (cons Row '())
+; - (cons Row Matrix)
+; *constraint*
+; all rows in matrix are of the same length
+(define mat1 (cons row1
+                   (cons row2 '())))
+(define mat3 (cons (cons 11
+                         (cons 12
+                               (cons 13 '())))
+                   (cons (cons 21
+                               (cons 22
+                                     (cons 23 '())))
+                         (cons (cons 31
+                                    (cons 32
+                                          (cons 33 '())))
+                              '()))))
+
+
+;; Note the constraints on matrices. Study the data
+;; definition and translate the two-by-two matrix
+;; consisting of the numbers 11, 12, 21, and 22 into
+;; this data representation. Stop, don't read on until
+;; you have figured out the data examples
+
+; Matrix -> Matrix
+; transpose the given Matrix along the diagonal
+
+(define wor1 (cons 11 (cons 21 '())))
+(define wor2 (cons 12 (cons 22 '())))
+(define tam1 (cons wor1 (cons wor2 '())))
+
+(check-expect (transpose mat1) tam1)
+
+(define (transpose lln)
+  (cond
+    [(empty? (first lln)) '()]
+    [else (cons (first* lln)
+                (transpose (rest* lln)))]))
+
+
+;; The function above implements the important mathematical
+;; operation of transposing the entries in a matrix. To
+;; transpose means to mirrow the entries along the
+;; diagonal, that is, the line from the top-left to the
+;; bottom-right.
+
+;; Stop! Transpose mat1 by hand, then read fig. 70. Why
+;; does transpose ask (empty? (first lln))?
+
+
+;; -- transpose asks (empty? (first lln)) because it is
+;; a function that consumes a Matrix. By definition
+;; a matrix is a (cons Row '()) or (cons Row Matrix), where
+;; Row can either be an '() or (cons Number Row).
+;; Since transpose avoids operating in the case when the
+;; given Matrix looks like:
+;; - (cons '() '())
+;; - (cons '() Matrix)
+;; examining what the transpose of such examples would look like
+;; is the clue
+;; 1. empty-matrix?
+;; '()
+;; '()
+;; 2.
+;; '()
+;;  2  2
+;; Just by looking at these we see that the transpose of the first
+;; makes no sense.
+;; And the second is violates the constraint of the data
+;; Matrix data definition.
+;; (empty? (first lln)) filters out these erroneous examples
+
+
+;; The definition assumes two auxiliary functions:
+;; - first*, which consumes a matrix and produces the first
+;; column as a list of numbers; and
+;; - rest*, which consumes a matrix and removes the first
+;; column. The result is a matrix.
+
+;; Even though you lack definitions for these functions, you
+;; should be able to understand how transpose works. You should
+;; also understand that you *cannot* design this function
+;; with the design recipes you have seen so far. Explain why.
+
+
+;; -- The design recipes seen so far won't suffice because
+;; 1. Though the transpose operates on self-referential data
+;; the base case is not contributing to the transposed output
+;; the entire computation is in the 2nd cond case (because
+;; of the data definition constraint on Matrix). As such
+;; first* and rest* don't have to worry about an empty?
+;; condition - instead they each operate on the entire matrix
+
+
+;; Design the two wish-list functions. Then complete the
+;; design of transpose with some test cases.
+
+;; Matrix -> Row
+;; Consumes a Matrix and produces the first column as
+;; a list of numbers
+
+(check-expect (first* mat1) (cons 11 (cons 21 '())))
+(check-expect (first* mat3) (cons 11 (cons 21 (cons 31 '()))))
+
+(define (first* m)
+  (cond
+    [(empty? m) '()]
+    [else (cons (first (first m))
+                (first* (rest m)))]))
+
+
+
+
+;; Matrix -> Matrix
+;; Consumes a Matrix and removes the first column.
+;; Returns the modified Matrix
+
+(check-expect (rest* mat1) (cons (cons 12 '())
+                                 (cons (cons 22 '())
+                                       '())))
+(check-expect (rest* mat3) (cons (cons 12
+                                       (cons 13 '()))
+                                 (cons (cons 22
+                                             (cons 23 '()))
+                                       (cons (cons 32
+                                                   (cons 33 '()))
+                                             '()))))
+
+(define (rest* m)
+  (cond
+    [(empty? m) '()] ; (cons Row '())
+    [else (cons (remove-first (first m))
+                (rest* (rest m)))]))
+
+
+; Row -> Row
+; Remove the first Number from the given Row r
+
+(check-expect (remove-first '()) '())
+(check-expect (remove-first row1) (cons 12 '()))
+(check-expect (remove-first row2) (cons 22 '()))
+(check-expect (remove-first (cons 11
+                                  (cons 12
+                                        (cons 13 '()))))
+              (cons 12
+                    (cons 13 '())))
+
+(define (remove-first r)
+  (cond
+    [(empty? r) '()]
+    [(cons? r) (rest r)]))
+   
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

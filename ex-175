@@ -42,7 +42,6 @@
 (define lol2 (cons low2 lol1))
 
 
-
 ; String -> Filestat
 ; Computes the Filestat for the file f
 
@@ -104,7 +103,6 @@
                     (word-count (rest lol)))]))
 
 
-
 ;; Why might your computer's wc give a slightly different
 ;; result from your code?
 
@@ -125,4 +123,5 @@
 ;; Also, though trivial, the arrangement of the count is
 ;; different. Unlike wc, this program will output letter,
 ;; word, and [new]line count.
+;; And the filename is part of the output for wc.
 

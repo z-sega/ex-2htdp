@@ -1,0 +1,292 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ex-180) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(define-struct editor [pre post])
+; An Editor is a structure:
+;   (make-editor Lo1s Lo1s)
+; An Lo1s is one of:
+; - '()
+; - (cons 1String Lo1s)
+(define good
+  (cons "g" (cons "o" (cons "o" (cons "d" '())))))
+(define all
+  (cons "a" (cons "l" (cons "l" '()))))
+(define lla
+  (cons "l" (cons "l" (cons "a" '()))))
+; *interp.* (make-editor pre post) means the letters
+; pre precede the cursor in reverse order, and those
+; in post succeed it. The combined test is:
+; (string-append (implode (rev pre))
+;                (implode post))
+
+; data example 1:
+(make-editor all good)
+
+; data example 2:
+(make-editor lla good) ; based on chosen interpretation
+
+
+; Lo1s -> Lo1s
+; produces a reverse version of the given list
+
+(check-expect (rev '()) '())
+(check-expect (rev (cons "a" '())) (cons "a" '()))
+(check-expect (rev (cons "a" (cons "b" (cons "c" '()))))
+              (cons "c" (cons "b" (cons "a" '()))))
+
+(define (rev l)
+  (cond
+    [(empty? l) '()]
+    [(cons? l) (add-at-end (rev (rest l))
+                           (first l))]))
+
+; Lo1s 1String -> Lo1s
+; creates a new list by adding s to the end of l
+
+(check-expect (add-at-end '() "a")
+              (cons "a" '()))
+(check-expect (add-at-end (cons "c" (cons "b" '())) "a")
+              (cons "c" (cons "b" (cons "a" '()))))
+
+(define (add-at-end l s)
+  (cond
+    [(empty? l) (cons s '())]
+    [(cons? l) (cons (first l)
+                     (add-at-end (rest l) s))]))
+
+
+;; ex-177
+;; Design the function create-editor. The function consumes
+;; two strings and produces an Editor. The first string is
+;; the text to the left of the cursor and the second string
+;; is the text to the right of the cursor. The rest of the
+;; section relies on this function.
+
+
+; String String -> Editor
+; Consumes pre and post, where pre comes before the cursor
+; and post succeeds the cursor
+
+(check-expect (create-editor "all" "good")
+              (make-editor (explode "lla") (explode "good")))
+
+(define (create-editor pre post)
+  (make-editor (rev (explode pre))
+               (explode post)))
+
+
+(require 2htdp/universe)
+(require 2htdp/image)
+
+(define HEIGHT 20)
+(define WIDTH 200)
+(define FONT-SIZE 16)
+(define FONT-COLOR "black")
+
+(define MT (empty-scene WIDTH HEIGHT))
+(define CURSOR (rectangle 1 HEIGHT "solid" "red"))
+
+
+; Editor -> Image
+; renders an editor as an image of the two texts
+; separated by the cursor
+
+(check-expect (editor-render
+               (create-editor "pre" "post"))
+              (place-image/align
+               (beside (editor-text (cons "p"
+                                          (cons "r"
+                                                (cons "e" '()))))
+                       CURSOR
+                       (editor-text (cons "p"
+                                          (cons "o"
+                                                (cons "s"
+                                                      (cons "t" '()))))))
+               1 1
+               "left" "top"
+               MT))
+
+(define (editor-render e)
+  (place-image/align
+   (beside (editor-text (reverse (editor-pre e)))
+           CURSOR
+           (editor-text (editor-post e)))
+   1 1
+   "left" "top"
+   MT))
+
+
+; Lo1s -> Image
+; renders a list of 1Strings as a text image
+
+(check-expect (editor-text '())
+              (text "" FONT-SIZE FONT-COLOR))
+(check-expect (editor-text (cons "p"
+                                 (cons "o"
+                                       (cons "s"
+                                             (cons "t" '())))))
+              (text "post" FONT-SIZE FONT-COLOR))
+
+;(define (editor-text s)
+;  (text (implode s) FONT-SIZE FONT-COLOR))
+
+;; ex-180
+;; Design editor-text without using implode
+
+(define (editor-text s)
+  (text (lo1s->string s) FONT-SIZE FONT-COLOR))
+
+
+; Lo1s -> String
+; Returns a String from combining l
+
+(check-expect (lo1s->string '()) "")
+(check-expect (lo1s->string (cons "p"
+                                  (cons "o"
+                                        (cons "s"
+                                              (cons "t" '())))))
+              "post")
+
+(define (lo1s->string l)
+  (cond
+    [(empty? l) ""]
+    [(cons? l) (string-append (first l)
+                              (lo1s->string (rest l)))]))
+
+; Editor KeyEvent -> Editor
+; deals with a key event, given some editor
+
+(check-expect (editor-kh (create-editor "" "") "e")
+              (create-editor "e" ""))
+(check-expect (editor-kh (create-editor "cd" "fgh") "e")
+              (create-editor "cde" "fgh"))
+; - "\b" (delete)
+(check-expect (editor-kh (create-editor "cd" "fgh") "\b")
+              (create-editor "c" "fgh"))
+(check-expect (editor-kh (create-editor "" "fgh") "\b")
+              (create-editor "" "fgh"))
+; - "left" (nav)
+(check-expect (editor-kh (create-editor "cd" "fgh") "left")
+              (create-editor "c" "dfgh"))
+(check-expect (editor-kh (create-editor "" "fgh") "left")
+              (create-editor "" "fgh"))
+; - "right" (nav)
+(check-expect (editor-kh (create-editor "cd" "fgh") "right")
+              (create-editor "cdf" "gh"))
+(check-expect (editor-kh (create-editor "cd" "") "right")
+              (create-editor "cd" ""))
+; - "up" or "down" (do-nothing)
+(check-expect (editor-kh (create-editor "cd" "fgh") "up")
+              (create-editor "cd" "fgh"))
+(check-expect (editor-kh (create-editor "cd" "") "down")
+              (create-editor "cd" ""))
+
+(define (editor-kh ed k)
+  (cond
+    [(key=? k "left") (editor-lft ed)]
+    [(key=? k "right") (editor-rgt ed)]
+    [(key=? k "\b") (editor-del ed)]
+    [(key=? k "\t") ed]
+    [(key=? k "\r") ed]
+    [(= (string-length k) 1) (editor-ins ed k)]
+    [else ed]))
+
+
+; Editor -> Editor
+; moves the cursor position one 1String left,
+; if possible
+
+(check-expect (editor-lft (create-editor "cd" "fgh"))
+              (create-editor "c" "dfgh"))
+(check-expect (editor-lft (create-editor "" "fgh"))
+              (create-editor "" "fgh"))
+
+(define (editor-lft ed)
+  (if (empty? (editor-pre ed))
+      ed
+      (make-editor (rest (editor-pre ed))
+                   (cons (first (editor-pre ed))
+                         (editor-post ed)))))
+
+                   
+; Editor -> Editor
+; moves the cursor position one 1String right,
+; if possible
+
+(check-expect (editor-rgt (create-editor "cd" "fgh"))
+              (create-editor "cdf" "gh"))
+(check-expect (editor-rgt (create-editor "cd" ""))
+              (create-editor "cd" ""))
+
+(define (editor-rgt ed)
+  (if (empty? (editor-post ed))
+      ed
+      (make-editor (cons (first (editor-post ed))
+                         (editor-pre ed))
+                   (rest (editor-post ed)))))
+
+
+; Editor -> Editor
+; deletes a 1String to the left of the cursor,
+; if possible
+
+(check-expect (editor-del (create-editor "cd" "fgh"))
+              (create-editor "c" "fgh"))
+(check-expect (editor-del (create-editor "" "fgh"))
+              (create-editor "" "fgh"))
+
+(define (editor-del ed)
+  (if (empty? (editor-pre ed))
+      ed
+      (make-editor (rest (editor-pre ed))
+                   (editor-post ed))))
+
+
+; Editor 1String -> Editor
+; insert the 1String k between pre and post
+; explanation:
+; since the intepretation of the Editor describes
+; pre as the list of 1Strings to preceding the
+; cursor *in reverse*, inserting k between pre and post
+; is as easy as slapping it onto pre
+
+(check-expect (editor-ins (make-editor '() '()) "e")
+              (make-editor (cons "e" '()) '()))
+(check-expect (editor-ins (make-editor (cons "d" '())
+                                       (cons "f" (cons "g" '())))
+                          "e")
+              (make-editor (cons "e" (cons "d" '()))
+                           (cons "f" (cons "g" '()))))
+
+(define (editor-ins ed k)
+  (make-editor (cons k (editor-pre ed))
+               (editor-post ed)))
+  
+
+;; ex-178
+;; Explain why the template for editor-kh deals with
+;; "\t" and "\r" before it checks for strings of length
+;; 1.
+
+;(define (editor-kh ed ke)
+;  (cond
+;    [(key=? k "left") ...]
+;    [(key=? k "right") ...]
+;    [(key=? k "\b") ...]
+;    [(key=? k "\t") ...]
+;    [(key=? k "\r") ...]
+;    [(= (string-lenghth k) 1) ...]
+;    [else ...]))
+
+;; The template deals with "\t" and "\r" first
+;; because they are 1Strings but need to be 
+;; handled differently from other 1Strings
+;; such as input 1Strings (e.g "e", "f")
+
+; main: String -> Editor
+; launches the editor given some initial string
+(define (main s)
+  (big-bang (create-editor s " ")
+    [on-key editor-kh]
+    [to-draw editor-render]))
+

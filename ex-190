@@ -15,3 +15,39 @@
 ;; from the end, up through all items in s.
 ;; For example, (list "b" "c" "d") is a suffix of
 ;; itself and (list "a" "b" "c" "d").
+
+
+; A Lo1s is one of:
+; - '()
+; - (cons 1String Lo1s)
+(define l1 (list "a"))
+(define l2 (list "a" "b"))
+(define l3 (list "a" "b" "c"))
+
+; A List-of-Lo1s is one of:
+; - '()
+; - (cons Lo1s List-of-Lo1s)
+(define lp1 (list (list "a")))
+(define lp2 (list (list "a")
+                  (list "a" "b")))
+(define lp3 (list (list "a")
+                  (list "a" "b")
+                  (list "a" "b" "c")))
+                      
+  
+; Lo1s -> List-of-Lo1s
+; computes a list of prefixes for the given
+; list of 1Strings l
+
+(check-expect (prefixes '()) '())
+(check-expect (prefixes l1) lp1)
+(check-expect (prefixes l2) lp2)
+(check-expect (prefixes l3) lp3)
+
+(define (prefixes l)
+  (cond
+    [(empty? l) '()]
+    [else (... (first l)
+               (prefixes (rest l)) ...)]))
+
+
