@@ -24,19 +24,19 @@
 (define l2 (list "a" "b"))
 (define l3 (list "a" "b" "c"))
 
-; A List-of-Lo1s is one of:
+; A List-of-prefixes is one of:
 ; - '()
-; - (cons Lo1s List-of-Lo1s)
+; - (cons Lo1s List-of-prefixes)
 (define lp1 (list (list "a")))
-(define lp2 (list (list "a")
-                  (list "a" "b")))
-(define lp3 (list (list "a")
+(define lp2 (list (list "a" "b")
+                  (list "a")))
+(define lp3 (list (list "a" "b" "c")
                   (list "a" "b")
-                  (list "a" "b" "c")))
+                  (list "a")))
                       
   
-; Lo1s -> List-of-Lo1s
-; computes a list of prefixes for the given
+; Lo1s -> List-of-prefixes
+; computes a List-of-prefixes for the given
 ; list of 1Strings l
 
 (check-expect (prefixes '()) '())
@@ -47,7 +47,43 @@
 (define (prefixes l)
   (cond
     [(empty? l) '()]
-    [else (... (first l)
-               (prefixes (rest l)) ...)]))
+    [else (cons l
+                (prefixes (remove-last l)))]))
 
 
+; Lo1s -> Lo1s
+; removes the last item on the given l
+
+(check-expect (remove-last '()) '())
+(check-expect (remove-last l1) '())
+(check-expect (remove-last l2) l1)
+(check-expect (remove-last l3) l2)
+
+(define (remove-last l)
+  (cond
+    [(empty? l) '()]
+    [else (reverse (rest (reverse l)))]))
+
+
+; A List-of-suffixes is one of:
+; - '()
+; - (cons Lo1s List-of-suffixes)
+
+
+; Lo1s -> List-of-suffixes
+; computes a List-of-suffixes for the given
+; list of 1Strings l
+
+(check-expect (suffixes '()) '())
+(check-expect (suffixes l1) (list '()))
+(check-expect (suffixes l2) (list (list "b")
+                                  '()))
+(check-expect (suffixes l3) (list (list "b" "c")
+                                  (list "c")
+                                  '()))
+
+(define (suffixes l)
+  (cond
+    [(empty? l) '()]
+    [else (cons (rest l)
+                (suffixes (rest l)))]))
