@@ -1,0 +1,335 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-197) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/batch-io)
+
+(define LOCATION "/usr/share/dict/words")
+
+; A List-of-Strings is one of:n
+; - '()
+; - (cons String List-of-Strings)
+(define sm-l (list "Albarn"
+                   "allen"
+                   "barn"
+                   "bishop"
+                   "Ken"
+                   "vision"
+                   "zed"
+                   "Zebra"))
+
+; A Dictionary is a List-of-Strings.
+(define AS-LIST (read-lines LOCATION))
+
+; A Letter is one of the following 1Strings:
+; - "a"
+; - ...
+; - "z"
+; or, equivalently, a member? of this list:
+(define LETTERS
+  (explode "abcdefghijklmnopqrstuvwxyz"))
+
+; List-of-Letters is one of:
+; - '()
+; - (cons Letter List-of-Letter)
+
+;; --ex-197
+;; Design most-frequent. The function consumes a Dictionary.
+;; It produces the Letter-Count for the letter that occurs
+;; most often as the first one in the given Dictionary.
+;;
+;; What is the most frequently used letter in your computer's
+;; dictionary and how often is it used?
+;;
+;; *Note on Design Choices*
+;; This exercise calls for the composition of the solution
+;; to the preceding exercise with a function that picks the
+;; correct pairing from a list of Letter-Counts.
+;;
+;; There are two ways to design this latter function:
+;; - Design a function that picks the pair with the
+;;   maximum count.
+;; - Design a function that selects the first from a sorted
+;;   list of pairs.
+;;
+;; Consider designing both. Which one do you prefer? Why?
+
+
+(define-struct LC [letter count])
+; LC (short for Letter-Count) is a structure:
+;   (make-LC Letter Number)
+; *intepretation*
+; (make-LC "a" 2) describes the statistic that
+; connects "a" to 2. It is used to keep
+; track of how many times a letter appears in
+; a given List-of-Strings
+(define lc-a (make-LC "a" 2))
+(define lc-b (make-LC "b" 2))
+(define lc-c (make-LC "c" 0))
+
+
+; A List-of-LCs is one of:
+; - (cons LC '())
+; - (cons LC List-of-LC)
+(define lc1 (list lc-a))
+(define lc0 (list (make-LC "a" 0)
+                  (make-LC "b" 0)
+                  (make-LC "c" 0)
+                  (make-LC "d" 0)
+                  (make-LC "e" 0)
+                  (make-LC "f" 0)
+                  (make-LC "g" 0)
+                  (make-LC "h" 0)
+                  (make-LC "i" 0)
+                  (make-LC "j" 0)
+                  (make-LC "k" 0)
+                  (make-LC "l" 0)
+                  (make-LC "m" 0)
+                  (make-LC "n" 0)
+                  (make-LC "o" 0)
+                  (make-LC "p" 0)
+                  (make-LC "q" 0)
+                  (make-LC "r" 0)
+                  (make-LC "s" 0)
+                  (make-LC "t" 0)
+                  (make-LC "u" 0)
+                  (make-LC "v" 0)
+                  (make-LC "w" 0)
+                  (make-LC "x" 0)
+                  (make-LC "y" 0)
+                  (make-LC "z" 0)))
+(define lcx (list (make-LC "a" 1)
+                  (make-LC "b" 2)
+                  (make-LC "c" 0)
+                  (make-LC "d" 0)
+                  (make-LC "e" 0)
+                  (make-LC "f" 0)
+                  (make-LC "g" 0)
+                  (make-LC "h" 0)
+                  (make-LC "i" 0)
+                  (make-LC "j" 0)
+                  (make-LC "k" 0)
+                  (make-LC "l" 0)
+                  (make-LC "m" 0)
+                  (make-LC "n" 0)
+                  (make-LC "o" 0)
+                  (make-LC "p" 0)
+                  (make-LC "q" 0)
+                  (make-LC "r" 0)
+                  (make-LC "s" 0)
+                  (make-LC "t" 0)
+                  (make-LC "u" 0)
+                  (make-LC "v" 1)
+                  (make-LC "w" 0)
+                  (make-LC "x" 0)
+                  (make-LC "y" 0)
+                  (make-LC "z" 1)))
+
+;; a. --- designing a function that picks the pair
+;; the maximum count
+
+; LCOrFalse is one of:
+; - #f
+; - LC
+
+; List-of-String -> LCOrFalse
+; computes the LC for the letter that occurs the
+; most often as the first one in the given los
+; *implementation*
+; picks the pair with the maximum count
+(check-expect (most-frequent.a '()) #f)
+(check-expect (most-frequent.a sm-l) (make-LC "b" 2))
+
+(define (most-frequent.a los)
+  (cond
+    [(empty? los) #f]
+    [else (max-letter-count-list
+           (count-by-letter los))]))
+
+
+; A NEList-of-LC is one of:
+; - (cons LC '())
+; - (cons LC NEList-of-LC)
+
+
+; NEList-of-LC -> LC
+; returns the LC with the highest count
+; from lolc
+(check-expect (max-letter-count-list (list (make-LC "a" 4)))
+              (make-LC "a" 4))
+(check-expect (max-letter-count-list lcx) (make-LC "b" 2))
+
+(define (max-letter-count-list lolc)
+  (cond
+    [(empty? (rest lolc)) (first lolc)]
+    [else
+     (max-letter-count (first lolc)
+                       (max-letter-count-list (rest lolc)))]))
+
+
+; LC LC -> LC
+; returns the LC with the highest count
+; from LCs a and b
+(check-expect (max-letter-count (make-LC "a" 4)
+                                (make-LC "b" 2))
+              (make-LC "a" 4))
+(check-expect (max-letter-count (make-LC "a" 2)
+                                (make-LC "b" 8))
+              (make-LC "b" 8))
+
+(define (max-letter-count a b)
+  (if (>= (LC-count a) (LC-count b))
+      a
+      b))
+
+;; b. --- designing a function that selects the first
+;; from a sorted list of pairs
+
+; List-of-String -> LCOrFalse
+; computes the LC for the letter that occurs
+; the most often as the first one in the given
+; los
+; *implementation*
+; selects the first from a sorted list of pairs
+(check-expect (most-frequent.b '()) #f)
+(check-expect (most-frequent.b sm-l) (make-LC "b" 2))
+
+(define (most-frequent.b los)
+  (cond
+    [(empty? los) #f]
+    [else (first (sort> (count-by-letter los)))]))
+
+
+; List-of-LC -> List-of-LC
+; sorts lolc in descending order
+(check-expect (sort> lcx) (list (make-LC "b" 2)
+                                (make-LC "a" 1)
+                                (make-LC "v" 1)
+                                (make-LC "z" 1)
+                                (make-LC "c" 0)
+                                (make-LC "d" 0)
+                                (make-LC "e" 0)
+                                (make-LC "f" 0)
+                                (make-LC "g" 0)
+                                (make-LC "h" 0)
+                                (make-LC "i" 0)
+                                (make-LC "j" 0)
+                                (make-LC "k" 0)
+                                (make-LC "l" 0)
+                                (make-LC "m" 0)
+                                (make-LC "n" 0)
+                                (make-LC "o" 0)
+                                (make-LC "p" 0)
+                                (make-LC "q" 0)
+                                (make-LC "r" 0)
+                                (make-LC "s" 0)
+                                (make-LC "t" 0)
+                                (make-LC "u" 0)
+                                (make-LC "w" 0)
+                                (make-LC "x" 0)
+                                (make-LC "y" 0)))
+
+(define (sort> lolc)
+  (cond
+    [(empty? lolc) '()]
+    [else (insert (first lolc) (sort> (rest lolc)))]))
+
+
+; LC List-of-LC -> List-of-LC
+; inserts lc into [sorted: desc] lolc
+; the output is sorted 
+(check-expect (insert (make-LC "b" 100)
+                      lcx)
+              (cons (make-LC "b" 100)
+                    lcx))
+
+(define (insert lc lolc)
+  (cond
+    [(empty? lolc) (list lc)]
+    [else (if (letter-count>= lc (first lolc))
+              (cons lc lolc)
+              (cons (first lolc) (insert lc (rest lolc))))]))
+
+; LC LC -> Boolean
+; #t if a is more frequent, or just as frequent, as b
+(check-expect (letter-count>= (make-LC "a" 3)
+                              (make-LC "b" 2))
+              #t)
+(check-expect (letter-count>= (make-LC "a" 3)
+                              (make-LC "b" 3))
+              #t)
+(check-expect (letter-count>= (make-LC "a" 2)
+                              (make-LC "b" 3))
+              #f)
+
+(define (letter-count>= a b)
+  (>= (LC-count a) (LC-count b)))
+
+
+; List-of-String -> List-of-LC
+; counts how often each letter is used as the
+; first one of a word in the given los
+(check-expect (count-by-letter '()) '())
+(check-expect (count-by-letter sm-l) lcx)
+
+(define (count-by-letter los)
+  (cond
+    [(empty? los) '()]
+    [else (count-by-letter-for-letters LETTERS los)]))
+  
+
+; List-of-Letters List-of-Words -> List-of-LC
+; given a lol and los, where lol is the list
+; of letters to check with, compute a List-of-LC
+; based on starts-with# for each lol in los
+(check-expect (count-by-letter-for-letters
+               (list "a" "b") sm-l)
+              (list (make-LC "a" 1)
+                    (make-LC "b" 2)))
+
+(define (count-by-letter-for-letters lol los)
+  (cond
+    [(empty? lol) '()]
+    [else (cons (starts-with-to-lc (first lol) los)
+                (count-by-letter-for-letters (rest lol) los))]))
+ 
+
+; Letter List-of-String -> LC
+; counts how often the given letter is used as
+; the first letter of a word los
+(check-expect (starts-with-to-lc "a" sm-l) (make-LC "a" 1))
+(check-expect (starts-with-to-lc "v" sm-l) (make-LC "v" 1))
+(check-expect (starts-with-to-lc "c" sm-l) (make-LC "c" 0))
+
+(define (starts-with-to-lc l los)
+  (make-LC l (starts-with# l los)))
+
+
+; Letter Dictionary -> Number
+; counts the number of words in los that start with l
+(check-expect (starts-with# "f" sm-l) 0)
+(check-expect (starts-with# "z" sm-l) 1)
+(check-expect (starts-with# "b" sm-l) 2)
+
+(define (starts-with# l los)
+  (cond
+    [(empty? los) 0]
+    [else (+ (if (starts-with? l (first los))
+                 1
+                 0)
+             (starts-with# l (rest los)))]))
+
+
+; Letter String -> Boolean
+; #t if the string s begins with the letter l
+(check-expect (starts-with? "z" "zebra") #t)
+(check-expect (starts-with? "a" "zebra") #f)
+(check-expect (starts-with? "z" "Zebra") #f)
+(check-expect (starts-with? "" "zebra") #f)
+
+(define (starts-with? l s)
+  (string=? l
+            (first (explode s))))
+
+
+(most-frequent.a AS-LIST)
+(most-frequent.b AS-LIST)

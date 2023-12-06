@@ -1,0 +1,169 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-192) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/image)
+
+;; Sample Problem
+;; Design a function that adds a polygon to a
+;; given scene.
+
+; A Polygon is one of:
+; - (cons Posn (cons Posn (cons Posn '())))
+; - (cons Posn Polygon)
+;
+; -or- (in short-form)
+;
+; A Polygon is one of:
+; - (list Posn Posn Posn)
+; - (cons Posn Polygon)
+(define triangle-p
+  (list (make-posn 20 10)
+        (make-posn 20 20)
+        (make-posn 30 20)))
+
+(define square-p
+  (list (make-posn 10 10)
+        (make-posn 20 10)
+        (make-posn 20 20)
+        (make-posn 10 20)))
+        
+
+; a plain background image
+(define MT (empty-scene 50 50))
+
+; Image Polygon -> Image
+; renders the given polygon p into img
+
+;(check-expect (render-poly MT triangle-p)
+;              (scene+line
+;               (scene+line MT 20 20 30 20 "red")
+;               20 10 20 20 "red"))
+
+;(check-expect (render-poly MT square-p)
+;              (scene+line
+;               (scene+line
+;                (scene+line MT 10 10 20 10 "red")
+;                20 10 20 20 "red")
+;               20 20 10 20 "red"))
+              
+(define (render-poly img p)
+  (cond
+    [(empty? (rest (rest (rest p))))
+     (render-line
+       (render-line
+         (render-line MT (first p) (second p))
+         (second p) (third p))
+       (third p) (first p))]
+    [else
+     (render-line (render-poly img (rest p))
+                  (first p)
+                  (second p))]))
+          
+
+; Image Posn Posn -> Image
+; draws a red line from Posn p to Posn q into im
+
+(check-expect (render-line MT
+                           (make-posn 10 10)
+                           (make-posn 20 10))
+              (scene+line MT
+                          10 10
+                          20 10
+                          "red"))
+
+(define (render-line im p q)
+  (scene+line im
+              (posn-x p) (posn-y p)
+              (posn-x q) (posn-y q)
+              "red"))
+
+
+;; *Sample Problem*
+;; Design a function that draws connections between
+;; a given bunch of dots into a given scene.
+
+
+; A NELoP is one of:
+; - (cons Posn '())
+; - (cons Posn NELoP)
+(define nel1 (list (make-posn 10 10)))
+(define nel2 (list (make-posn 10 10)
+                   (make-posn 20 20)))
+(define nel3 (list (make-posn 10 10)
+                   (make-posn 20 20)
+                   (make-posn 40 30)))
+(define nel4 (list (make-posn 10 10)
+                   (make-posn 20 20)
+                   (make-posn 40 30)
+                   (make-posn 30 50)))
+
+
+; Image NELoP -> Image
+; connects the dots in p by rendering lines
+; in img
+
+(check-expect (connect-dots MT nel1) MT)
+(check-expect (connect-dots MT nel2) (render-line MT
+                                                  (first nel2)
+                                                  (second nel2)))
+
+(define (connect-dots img p)
+  (cond
+    [(empty? (rest p)) img]
+    [else (render-line
+           (connect-dots img (rest p))
+           (first p)
+           (second p))]))
+
+
+; Image Polygon -> Image
+; adds an image of p to img
+
+(check-expect (render-poly.v2 MT triangle-p)
+              (scene+line
+               (scene+line
+                (scene+line MT 20 10 20 20 "red")
+                20 20 30 20 "red")
+               30 20 20 10 "red"))
+
+(check-expect (render-poly.v2 MT square-p)
+              (scene+line
+               (scene+line
+                (scene+line
+                 (scene+line MT 10 10 20 10 "red")
+                 20 10 20 20 "red")
+                20 20 10 20 "red")
+               10 20 10 10 "red"))
+
+(define (render-poly.v2 img p)
+  (render-line (connect-dots img p)
+               (first p)
+               (last p)))
+
+;; ex-192
+;; Argue why is is acceptable to use last on Polyygons.
+;; Also argue why you may adapt the template for
+;; connect-dots to last
+
+;; It is acceptable to use last on Polygons because
+;; Polygons are a subset of NELoP. Any function designed
+;; for a NELoP will also work on a Polygon.
+;;
+;; I may adapt the template for connect-dots to last
+;; because the template for connect-dots is for
+;; processing NELoP, this is the same data definition
+;; that last is designed to process.
+
+; NELoP -> Posn
+; extracts the last item from p
+
+(check-expect (last nel1) (make-posn 10 10))
+(check-expect (last triangle-p) (make-posn 30 20))
+(check-expect (last square-p) (make-posn 10 20))
+
+(define (last p)
+  (cond
+    [(empty? (rest p)) (first p)]
+    [else (first (reverse p))]))
+               
+

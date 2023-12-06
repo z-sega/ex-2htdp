@@ -1,0 +1,34 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname non-empty-list--maximum) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+
+; A NEList-of-Numbers is one of:
+; - (cons Number '())
+; - (cons Number List-of-Numbers)
+(define l1 (list 2))
+(define l2 (list 4 2))
+(define l3 (list 3 4 2))
+  
+; NEList-of-Numbers -> Number
+; returns the max in the given lon
+(check-expect (max-list l1) 2)
+(check-expect (max-list l2) 4)
+(check-expect (max-list l3) 4)
+
+(define (max-list lon)
+  (cond
+    [(empty? (rest lon)) (first lon)]
+    [else
+     (max* (first lon)
+           (max-list (rest lon)))]))
+
+; Number Number -> Number
+; returns the highest/max of a and b,
+; or a if a <=> b
+(check-expect (max* 4 2) 4)
+(check-expect (max* 4 8) 8)
+
+(define (max* a b)
+  (if (>= a b)
+      a
+      b))
