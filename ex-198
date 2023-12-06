@@ -1,7 +1,8 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-197) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-198) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 (require 2htdp/batch-io)
+
 
 (define LOCATION "/usr/share/dict/words")
 
@@ -31,27 +32,6 @@
 ; List-of-Letters is one of:
 ; - '()
 ; - (cons Letter List-of-Letter)
-
-;; --ex-197
-;; Design most-frequent. The function consumes a Dictionary.
-;; It produces the Letter-Count for the letter that occurs
-;; most often as the first one in the given Dictionary.
-;;
-;; What is the most frequently used letter in your computer's
-;; dictionary and how often is it used?
-;;
-;; *Note on Design Choices*
-;; This exercise calls for the composition of the solution
-;; to the preceding exercise with a function that picks the
-;; correct pairing from a list of Letter-Counts.
-;;
-;; There are two ways to design this latter function:
-;; - Design a function that picks the pair with the
-;;   maximum count.
-;; - Design a function that selects the first from a sorted
-;;   list of pairs.
-;;
-;; Consider designing both. Which one do you prefer? Why?
 
 
 (define-struct LC [letter count])
@@ -124,26 +104,152 @@
                   (make-LC "y" 0)
                   (make-LC "z" 1)))
 
-;; a. --- designing a function that picks the pair
-;; the maximum count
+;; ex-198
+;; Design words-by-first-letter. The function consumes a
+;; Dictionary and produces a list of Dictionarys, one per
+;; Letter.
+;;
+;; Redesign most-frequesnt from ex-197 using this new
+;; function. Call the new function most-frequent.v2. Once
+;; you have completed the design, ensure that the two
+;; functions compute the same result on your computer's
+;; dictionary:
+;;
+;; (check-expect
+;;   (most-frequent AS-LIST)
+;;   (most-frequent.v2 AS-LIST))
+;;
+;; *Note on Design Choices*
+;; For words-by-first-letter you have a choice for
+;; dealing with the situation when the given dictionary
+;; does not contain any words for some letter:
+;;
+;; - One alternative is to exclude the resulting empty
+;; dictionaries from the overall result. Doing so simplifies
+;; both the testing of the function and the design of
+;; most-frequent.v2, but it also requires the design of an
+;; auxiliary function.
+;;
+;; - The other one is to include '() as the result of
+;; looking for words of a certain letter, even if there
+;; aren't any. This alternative avoids the auxiliary function
+;; needed for the first alternative but adds complexity to
+;; the design of most-frequent.v2
 
+
+; A List-of-Dictionary is one of:
+; - '()
+; - (cons Dictionary List-of-Dictionary)
+(define lod1 (list (list "allen")
+                   (list "barn"
+                         "bishop")
+                   (list "vision")
+                   (list "zed")))
+                         
 ; LCOrFalse is one of:
 ; - #f
 ; - LC
+
+
+; Dictionary -> List-of-Dictionary
+; produces a List-of-Dictionary from d
+(check-expect (words-by-first-letter '()) '())
+(check-expect (words-by-first-letter sm-l) lod1)
+              
+(define (words-by-first-letter d)
+  (cond
+    [(empty? d) '()]
+    [else (words-by-first-letter* LETTERS d)]))
+
+; List-of-Letter List-of-String -> List-of-Dictionary
+; computes a Dictionary for the given lol and los
+; *implementation*
+; if there are words-matching-first-letter for a given letter
+; -> add those words to the List-of-Dictionary
+; -else-> move on with the rest letters and their matching words
+(check-expect (words-by-first-letter* LETTERS '()) '())
+(check-expect (words-by-first-letter* '() '()) '())
+(check-expect (words-by-first-letter* LETTERS sm-l) lod1)
+
+(define (words-by-first-letter* lol los)
+  (cond
+    [(empty? lol) '()]
+    [else (if (cons? (words-matching-first-letter (first lol) los))
+              (cons (words-matching-first-letter (first lol) los)
+                    (words-by-first-letter* (rest lol) los))
+              (words-by-first-letter* (rest lol) los))]))
+
+; Letter List-of-String -> Dictionary
+; computes a list of all strings from los starting with l
+(check-expect (words-matching-first-letter "a" '()) '())
+(check-expect (words-matching-first-letter "b" sm-l)
+              (list "barn" "bishop"))
+
+(define (words-matching-first-letter l los)
+  (cond
+    [(empty? los) '()]
+    [else (if (starts-with? l (first los))
+              (cons (first los) (words-matching-first-letter l (rest los)))
+              (words-matching-first-letter l (rest los)))]))
+
 
 ; List-of-String -> LCOrFalse
 ; computes the LC for the letter that occurs the
 ; most often as the first one in the given los
 ; *implementation*
 ; picks the pair with the maximum count
-(check-expect (most-frequent.a '()) #f)
-(check-expect (most-frequent.a sm-l) (make-LC "b" 2))
+(check-expect (most-frequent '()) #f)
+(check-expect (most-frequent sm-l) (make-LC "b" 2))
 
-(define (most-frequent.a los)
+(define (most-frequent los)
   (cond
     [(empty? los) #f]
     [else (max-letter-count-list
            (count-by-letter los))]))
+
+
+; Dictionary -> LCOrFalse
+; return the most frequently used first
+; letter in lod
+;(check-expect (most-frequent.v2 '()) (most-frequent '()))
+(check-expect (most-frequent.v2 sm-l) (most-frequent sm-l))
+
+(define (most-frequent.v2 los)
+  (most-frequent.v2* (words-by-first-letter los)))
+
+; List-of-Dictionary -> LCOrFalse
+; return the most frequently used first
+; letter in lod
+;(check-expect (most-frequent.v2* '()) (most-frequent '()))
+(check-expect (most-frequent.v2* (words-by-first-letter sm-l))
+              (most-frequent sm-l))
+
+(define (most-frequent.v2* lod)
+  (cond
+    [(empty? lod) (make-LC "" 0)]
+    [else
+     (max-letter-count (compute-letter-count (first lod))
+                       (most-frequent.v2* (rest lod)))]))
+
+
+; Dictionary* -> LCOrFalse
+; compute LC for the given Dictionary
+; *implementation*
+; Since the Dictionary* is a List-of-Strings
+; where all the first Letters are the same
+; letter is (first (explode (first ...)
+; count is (length ...)
+(check-expect (compute-letter-count '()) #f)
+(check-expect (compute-letter-count (list "barn" "bishop"))
+              (make-LC "b" 2))
+(check-expect (compute-letter-count (list "allen"))
+              (make-LC "a" 1))
+
+(define (compute-letter-count d)
+  (cond
+    [(empty? d) #f]
+    [else (make-LC (first (explode (first d)))
+                   (length d))]))
 
 
 ; A NEList-of-LC is one of:
@@ -180,89 +286,6 @@
   (if (>= (LC-count a) (LC-count b))
       a
       b))
-
-;; b. --- designing a function that selects the first
-;; from a sorted list of pairs
-
-; List-of-String -> LCOrFalse
-; computes the LC for the letter that occurs
-; the most often as the first one in the given
-; los
-; *implementation*
-; selects the first from a sorted list of pairs
-(check-expect (most-frequent.b '()) #f)
-(check-expect (most-frequent.b sm-l) (make-LC "b" 2))
-
-(define (most-frequent.b los)
-  (cond
-    [(empty? los) #f]
-    [else (first (sort> (count-by-letter los)))]))
-
-
-; List-of-LC -> List-of-LC
-; sorts lolc in descending order
-(check-expect (sort> lcx) (list (make-LC "b" 2)
-                                (make-LC "a" 1)
-                                (make-LC "v" 1)
-                                (make-LC "z" 1)
-                                (make-LC "c" 0)
-                                (make-LC "d" 0)
-                                (make-LC "e" 0)
-                                (make-LC "f" 0)
-                                (make-LC "g" 0)
-                                (make-LC "h" 0)
-                                (make-LC "i" 0)
-                                (make-LC "j" 0)
-                                (make-LC "k" 0)
-                                (make-LC "l" 0)
-                                (make-LC "m" 0)
-                                (make-LC "n" 0)
-                                (make-LC "o" 0)
-                                (make-LC "p" 0)
-                                (make-LC "q" 0)
-                                (make-LC "r" 0)
-                                (make-LC "s" 0)
-                                (make-LC "t" 0)
-                                (make-LC "u" 0)
-                                (make-LC "w" 0)
-                                (make-LC "x" 0)
-                                (make-LC "y" 0)))
-
-(define (sort> lolc)
-  (cond
-    [(empty? lolc) '()]
-    [else (insert (first lolc) (sort> (rest lolc)))]))
-
-
-; LC List-of-LC -> List-of-LC
-; inserts lc into [sorted: desc] lolc
-; the output is sorted 
-(check-expect (insert (make-LC "b" 100)
-                      lcx)
-              (cons (make-LC "b" 100)
-                    lcx))
-
-(define (insert lc lolc)
-  (cond
-    [(empty? lolc) (list lc)]
-    [else (if (letter-count>= lc (first lolc))
-              (cons lc lolc)
-              (cons (first lolc) (insert lc (rest lolc))))]))
-
-; LC LC -> Boolean
-; #t if a is more frequent, or just as frequent, as b
-(check-expect (letter-count>= (make-LC "a" 3)
-                              (make-LC "b" 2))
-              #t)
-(check-expect (letter-count>= (make-LC "a" 3)
-                              (make-LC "b" 3))
-              #t)
-(check-expect (letter-count>= (make-LC "a" 2)
-                              (make-LC "b" 3))
-              #f)
-
-(define (letter-count>= a b)
-  (>= (LC-count a) (LC-count b)))
 
 
 ; List-of-String -> List-of-LC
@@ -331,13 +354,4 @@
             (first (explode s))))
 
 
-(most-frequent.a AS-LIST)
-(most-frequent.b AS-LIST)
-
-;; ->
-;; Considering both of implementations of most-frequent,
-;; none jump out at me.
-;; If I had to choose, I'll go with the second implementation
-;; (b), though it takes a bit more set up and is slower,
-;; sorting a list sets it up for other complicated computations
-;; later on. 
+(most-frequent AS-LIST)
