@@ -1,0 +1,75 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-199) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-199
+;; While the import data definitions are already provided,
+;; the first step of the design recipe is still incomplete.
+;; Make up examples of Dates, Tracks, and LTracks.
+;; These examples come in handy for the following exercises
+;; as inputs.
+
+
+(define-struct Date [year month day hour minute second])
+; A Date is a structure:
+;   (make-Date N N N N N N)
+; *interpretation* An instance records six pieces of
+; information:
+; the date's year, month (between 1 and 12 inclusive),
+; day (between 1 and 31), hour (between 0 and 23),
+; minute (between 0 and 59), and second (also between
+; 0 and 59).
+(define d1 (make-Date 2002 7 17 3 55 14))
+(define d2 (make-Date 2011 5 17 17 35 13))
+(define d3 (make-Date 2007 5 3 13 30 0))
+(define d4 (make-Date 2023 12 6 11 35 13))
+
+
+(define-struct Track
+  [name artist album time track# added play# played])
+; A Track is a structure:
+;    (make-Track String String String N N Date N Date)
+; *interpretation* An instance records in order:
+; the track's title, its producing artist,
+; to which album it belongs, its playing time in
+; milliseconds, its position within the album, the
+; date it was added, how often it has been played,
+; and the date when it was last played
+(define t1 (make-Track "Wild Child" "Enya" "A Day Without"
+                       227996 2 d1 20 d2))
+(define t2 (make-Track "Modern Drummer" "Ungdomskulen" "Cry-Baby"
+                       326000 4 d3 60 d4))
+
+; An LTracks is one of:
+; - '()
+; - (cons Track LTracks)
+(define lt1 (list t1 t2))
+
+
+; Any Any Any Any Any Any Any Any -> Track or #false
+; creates an instance of Track for legitimate inputs
+; otherwise it produces #false
+(define (create-track name artist album time
+                      track# added play# played)
+  ...)
+
+
+; Any Any Any Any Any Any -> Date or #false
+; creates an instance of Date for legitimate inputs
+; otherwise it produces #false
+(define (create-date y mo day h m s) ...)
+
+
+; String -> LTracks
+; creates a list-of-tracks representation from the
+; text in file-name (an XML export from iTunes)
+(define (read-itunes-as-tracks file-name) ...)
+  
+
+;; --
+
+; modify the following to use your chosen name
+(define ITUNES-LOCATION "itunes.xml")
+
+; LTracks
+(define itunes-tracks
+  (read-itunes-as-tracks ITUNES-LOCATION))
