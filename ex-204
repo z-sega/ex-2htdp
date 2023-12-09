@@ -1,0 +1,209 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-204) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/itunes)
+
+;; ex-204
+;; Design select-albums. The function consumes an element of
+;; LTracks. It produces a list of LTracks, one per album.
+;; Each album is uniquely identified by its title and shows
+;; up in the result only once.
+;;
+;; *Hint*
+;; 1. You want to use some of the solutiosn of the preceding
+;; exercises.
+;; 2. The function that groups consumes two lists:
+;; the list of album ittles and the list of tracks;
+;; it considers the latters as atomic until it is handed over
+;; to an auxiliary function (see ex-196)
+
+
+; A List-of-strings is one of:
+; - '()
+; - (cons String List-of-strings)
+(define ls1 (list "track one"))
+(define ls2 (list "track one" "track two"))
+(define lsd1 (list "track one" "track one" "track two"))
+(define lsd2 (list "track one" "track two" "track one" "track two"))
+
+
+;(define-struct date [year month day hour minute second])
+; A Date is a structure:
+;   (make-Date N N N N N N)
+; *interpretation* An instance records six pieces of
+; information:
+; the date's year, month (between 1 and 12 inclusive),
+; day (between 1 and 31), hour (between 0 and 23),
+; minute (between 0 and 59), and second (also between
+; 0 and 59).
+(define d1 (create-date 2002 7 17 3 55 14))
+(define d2 (create-date 2011 5 17 17 35 13))
+(define d3 (create-date 2007 5 3 13 30 0))
+(define d4 (create-date 2023 12 6 11 35 13))
+
+
+
+;(define-struct track
+;  [name artist album time track# added play# played])
+; A Track is a structure:
+;    (make-Track String String String N N Date N Date)
+; *interpretation* An instance records in order:
+; the track's title, its producing artist,
+; to which album it belongs, its playing time in
+; milliseconds, its position within the album, the
+; date it was added, how often it has been played,
+; and the date when it was last played
+(define t1 (create-track "Wild Child" "Enya" "A Day Without Rain"
+                         227996 2 d1 20 d2))
+(define t2 (create-track "Modern Drummer" "Ungdomskulen" "Cry-Baby"
+                         326000 4 d3 60 d4))
+(define t3 (create-track "Only Time" "Enya" "A Day Without Rain"
+                         227996 3 (create-date 2002 7 17 3 55 42)
+                         18 (create-date 2023 5 17 17 38 47)))
+(define t4 (create-track "Feels Like Home" "Ungdomskulen" "Cry-Baby"
+                         315000 3 d3 5 d4))
+
+; An LTracks is one of:
+; - '()
+; - (cons Track LTracks)
+(define lt1 (list t1 t2))
+(define ltd (list t1 t2 t3))
+(define ltdd (list t1 t2 t4 t3))
+
+
+; LTracks -> N
+; computes the total play time of a given lt
+(check-expect (total-time '()) 0)
+(check-expect (total-time lt1) (+ (track-time t1)
+                                  (track-time t2)))
+
+(define (total-time lt)
+  (cond
+    [(empty? lt) 0]
+    [else (+ (track-time (first lt))
+             (total-time (rest lt)))]))
+
+
+; LTracks -> List-of-strings
+; returns the list of album titles as a list-of-strings
+(check-expect (select-all-album-titles '()) '())
+(check-expect (select-all-album-titles lt1)
+              (list (track-album t1)
+                    (track-album t2)))
+
+(define (select-all-album-titles lt)
+  (cond
+    [(empty? lt) '()]
+    [else (cons (track-album (first lt))
+                (select-all-album-titles (rest lt)))]))
+
+
+; List-of-strings -> List-of-strings
+; returns a list-of-strings like ls without duplicates
+; *implementation-detail*
+; since the function checks first if there are duplicates
+; of a given string in the rest of the given list-of-strings
+; the order is such that:
+; (list s1 s2 s2 s3 s2) -> (list s1 s3 s2)
+(check-expect (create-set '()) '())
+(check-expect (create-set lsd1) ls2)
+(check-expect (create-set lsd2) ls2)
+
+(define (create-set ls)
+  (cond
+    [(empty? ls) '()]
+    [else
+     (if (member? (first ls) (rest ls))
+         (create-set (rest ls))
+         (cons (first ls)
+               (create-set (rest ls))))]))
+
+
+; LTracks -> List-of-strings
+; returns a list of unique album titles from lt
+(check-expect (select-album-titles/unique '()) '())
+(check-expect (select-album-titles/unique ltd)
+              (list (track-album t2)
+                    (track-album t1)))
+
+(define (select-album-titles/unique lt)
+  (cond
+    [(empty? lt) '()]
+    [else (create-set
+           (select-all-album-titles lt))]))
+
+
+; String LTracks -> LTracks
+; extracts the list-of-tracks from lt that
+; belong to the given album a
+(check-expect (select-album "" '()) '())
+(check-expect (select-album "" ltd) '())
+(check-expect (select-album "Cry-Baby" ltd) (list t2))
+(check-expect (select-album "A Day Without Rain" ltd) (list t1 t3))
+
+(define (select-album a lt)
+  (if (eq? (string-length a) 0)
+      '()
+      (cond
+        [(empty? lt) '()]
+        [else
+         (if (eq? a (track-album (first lt)))
+             (cons (first lt) (select-album a (rest lt)))
+             (select-album a (rest lt)))])))
+
+
+; A LLTracks (short for List-of-LTracks) is one of:
+; - '()
+; - (cons LTracks LLTracks)
+(define llt1 (list (list t2)
+                   (list t1 t3)))
+(define llt2 (list (list t2 t4)
+                   (list t1 t3)))
+
+; LTracks -> LLTracks
+; computes a list-of-list-of-tracks, one per album.
+; Where each album is uniquely identifiable by its
+; title inside the tracks in each LTrack in LLTrack.
+(check-expect (select-albums '()) '())
+(check-expect (select-albums ltd) llt1)
+(check-expect (select-albums ltdd) llt2)
+
+(define (select-albums lt)
+  (cond
+    [(empty? lt) '()]
+    [else (group-tracks-by-albums (select-album-titles/unique lt)
+                                 lt)]))
+    
+
+; List-of-Strings LTracks -> LLTracks
+; computes a list-of-list-of-tracks by
+; grouping lt based on the album names in ls
+(check-expect (group-tracks-by-albums (list "Cry-Baby" "A Day Without Rain")
+                                     ltd)
+              llt1)
+(check-expect (group-tracks-by-albums (list "Cry-Baby" "A Day Without Rain")
+                                     ltdd)
+              llt2)
+
+(define (group-tracks-by-albums ls lt)
+  (cond
+    [(empty? ls) '()]
+    [else (cons (select-album (first ls) lt)
+                (group-tracks-by-albums (rest ls) lt))]))
+
+
+; String -> LTracks
+; creates a list-of-tracks representation from the
+; text in file-name (an XML export from iTunes)
+;(define (read-itunes-as-tracks file-name) ...)
+
+;; --
+
+; modify the following to use your chosen name
+(define ITUNES-LOCATION "./data/itunes.xml")
+
+; LTracks
+(define itunes-tracks
+  (read-itunes-as-tracks ITUNES-LOCATION))
+
+(select-albums itunes-tracks)

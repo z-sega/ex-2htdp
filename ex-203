@@ -1,0 +1,245 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-203) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/itunes)
+
+;; ex-203
+;; Design select-album-date. The function consumes the title
+;; of an album, a date, and an LTracks. It extracts from the
+;; the latter the list of tracks that belong to the given
+;; album and have been played after the given date.
+;;
+;; *Hint*
+;; You must design a function that consumes two Dates and
+;; determines whether the first occurs before the second.
+
+
+; A List-of-strings is one of:
+; - '()
+; - (cons String List-of-strings)
+(define ls1 (list "track one"))
+(define ls2 (list "track one" "track two"))
+(define lsd1 (list "track one" "track one" "track two"))
+(define lsd2 (list "track one" "track two" "track one" "track two"))
+
+
+;(define-struct date [year month day hour minute second])
+; A Date is a structure:
+;   (make-Date N N N N N N)
+; *interpretation* An instance records six pieces of
+; information:
+; the date's year, month (between 1 and 12 inclusive),
+; day (between 1 and 31), hour (between 0 and 23),
+; minute (between 0 and 59), and second (also between
+; 0 and 59).
+(define d1 (create-date 2002 7 17 3 55 14))
+(define d2 (create-date 2011 5 17 17 35 13))
+(define d3 (create-date 2007 5 3 13 30 0))
+(define d4 (create-date 2023 12 6 11 35 13))
+(define d5 (create-date 2023 1 1 0 0 0))
+
+
+;(define-struct track
+;  [name artist album time track# added play# played])
+; A Track is a structure:
+;    (make-Track String String String N N Date N Date)
+; *interpretation* An instance records in order:
+; the track's title, its producing artist,
+; to which album it belongs, its playing time in
+; milliseconds, its position within the album, the
+; date it was added, how often it has been played,
+; and the date when it was last played
+(define t1 (create-track "Wild Child" "Enya" "A Day Without Rain"
+                       227996 2 d1 20 d2))
+(define t2 (create-track "Modern Drummer" "Ungdomskulen" "Cry-Baby"
+                       326000 4 d3 60 d4))
+(define t3 (create-track "Only Time" "Enya" "A Day Without Rain"
+                       227996 3
+                       (create-date 2002 7 17 3 55 42)
+                       18
+                       (create-date 2023 5 17 17 38 47)))
+
+; An LTracks is one of:
+; - '()
+; - (cons Track LTracks)
+(define lt1 (list t1 t2))
+(define ltd (list t1 t2 t3))
+
+; Any Any Any Any Any Any Any Any -> Track or #false
+; creates an instance of Track for legitimate inputs
+; otherwise it produces #false
+;(define (create-track name artist album time
+;                      track# added play# played)
+;  ...)
+
+
+; Any Any Any Any Any Any -> Date or #false
+; creates an instance of Date for legitimate inputs
+; otherwise it produces #false
+;(define (create-date y mo day h m s) ...)
+
+
+; LTracks -> N
+; computes the total play time of a given lt
+(check-expect (total-time '()) 0)
+(check-expect (total-time lt1) (+ (track-time t1)
+                                  (track-time t2)))
+
+(define (total-time lt)
+  (cond
+    [(empty? lt) 0]
+    [else (+ (track-time (first lt))
+             (total-time (rest lt)))]))
+
+
+; LTracks -> List-of-strings
+; returns the list of album titles as a list-of-strings
+(check-expect (select-all-album-titles '()) '())
+(check-expect (select-all-album-titles lt1)
+              (list (track-album t1)
+                    (track-album t2)))
+
+(define (select-all-album-titles lt)
+  (cond
+    [(empty? lt) '()]
+    [else (cons (track-album (first lt))
+                (select-all-album-titles (rest lt)))]))
+
+
+; List-of-strings -> List-of-strings
+; returns a list-of-strings like ls without duplicates
+; *implementation-detail*
+; since the function checks first if there are duplicates
+; of a given string in the rest of the given list-of-strings
+; the order is such that:
+; (list s1 s2 s2 s3 s2) -> (list s1 s3 s2)
+(check-expect (create-set '()) '())
+(check-expect (create-set lsd1) ls2)
+(check-expect (create-set lsd2) ls2)
+
+(define (create-set ls)
+  (cond
+    [(empty? ls) '()]
+    [else
+     (if (member? (first ls) (rest ls))
+         (create-set (rest ls))
+         (cons (first ls)
+               (create-set (rest ls))))]))
+
+
+; LTracks -> List-of-strings
+; returns a list of unique album titles from lt
+(check-expect (select-album-titles/unique '()) '())
+(check-expect (select-album-titles/unique ltd)
+              (list (track-album t2)
+                    (track-album t1)))
+
+(define (select-album-titles/unique lt)
+  (cond
+    [(empty? lt) '()]
+    [else (create-set
+           (select-all-album-titles lt))]))
+
+
+; String LTracks -> LTracks
+; extracts the list-of-tracks from lt that
+; belong to the given album a
+(check-expect (select-album "" '()) '())
+(check-expect (select-album "" ltd) '())
+(check-expect (select-album "Cry-Baby" ltd) (list t2))
+(check-expect (select-album "A Day Without Rain" ltd) (list t1 t3))
+
+(define (select-album a lt)
+  (if (eq? (string-length a) 0)
+      '()
+      (cond
+        [(empty? lt) '()]
+        [else
+         (if (eq? a (track-album (first lt)))
+             (cons (first lt) (select-album a (rest lt)))
+             (select-album a (rest lt)))])))
+
+
+; String Date LTracks -> LTracks
+; extracts from lt the list-of-tracks that belong
+; to the given album a and have been played after
+; date d.
+(check-expect (select-album-date "" d5 '()) '())
+(check-expect (select-album-date "Cry-Baby" d5 '()) '())
+(check-expect (select-album-date "A Day Without Rain" d5 ltd) (list t3))
+
+(define (select-album-date a d lt)
+  (if (eq? (string-length a) 0)
+      '()
+      (cond
+        [(empty? lt) '()]
+        [else
+         (if (and (eq? a (track-album (first lt)))
+                  (date< d (track-played (first lt))))
+             (cons (first lt) (select-album-date a d (rest lt)))
+             (select-album-date a d (rest lt)))])))
+
+
+; Date Date -> Boolean
+; determines whether date a occurs before date b
+(check-expect (date< d2 d1) #f)
+(check-expect (date< d1 d2) #t)
+(check-expect (date< d3 d4) #t)
+(check-expect (date< (create-date 2000 1 1 1 1 0)
+                     (create-date 2000 1 1 1 1 0))
+              #f)
+(check-expect (date< (create-date 2000 1 1 1 1 0)
+                     (create-date 2000 1 1 1 1 1))
+              #t)
+(check-expect (date< (create-date 2000 1 1 1 1 1)
+                     (create-date 2000 1 1 1 1 0))
+              #f)
+
+(define (date< a b)
+  (cond
+    [(< (date-year a) (date-year b))
+     #t]
+    [(and (eq? (date-year a) (date-year b))
+          (< (date-month a) (date-month b)))
+     #t]
+    [(and (eq? (date-year a) (date-year b))
+          (eq? (date-month a) (date-month b))
+          (< (date-day a) (date-day b)))
+     #t]
+    [(and (eq? (date-year a) (date-year b))
+          (eq? (date-month a) (date-month b))
+          (eq? (date-day a) (date-day b))
+          (< (date-hour a) (date-hour b)))
+     #t]
+    [(and (eq? (date-year a) (date-year b))
+          (eq? (date-month a) (date-month b))
+          (eq? (date-day a) (date-day b))
+          (eq? (date-hour a) (date-hour b))
+          (< (date-minute a) (date-minute b)))
+     #t]
+    [(and (eq? (date-year a) (date-year b))
+          (eq? (date-month a) (date-month b))
+          (eq? (date-day a) (date-day b))
+          (eq? (date-hour a) (date-hour b))
+          (eq? (date-minute a) (date-minute b))
+          (< (date-second a) (date-second b)))
+     #t]
+    [else #f]))
+
+(date< (create-date 2000 1 1 1 1 1)
+                     (create-date 2000 1 1 1 1 0))
+
+; String -> LTracks
+; creates a list-of-tracks representation from the
+; text in file-name (an XML export from iTunes)
+;(define (read-itunes-as-tracks file-name) ...)
+
+;; --
+
+; modify the following to use your chosen name
+;(define ITUNES-LOCATION "./data/itunes.xml")
+
+; LTracks
+;(define itunes-tracks
+;  (read-itunes-as-tracks ITUNES-LOCATION))
+
