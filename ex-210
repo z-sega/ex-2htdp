@@ -1,6 +1,6 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-209) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-210) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 (require 2htdp/batch-io)
 
 ;; *Sample Problem*
@@ -8,15 +8,10 @@
 ;; the same letters. For example "cat" also spells "act".
 
 
-;; ex-209
-;; The above leaves us with two additional wishes: a function
-;; that consumes a String and produces its corresponding Word,
-;; and a function for the opposite direction.
-;; Look up the data definition for Word in the next section
-;; complete the definitions of string->word and word-string.
-;; *Hint*
-;; You may wish to look in the list of functions that BSL
-;; provides.
+;; ex-210
+;; Complete the design of the words->strings function specified
+;; in fig. 78.
+;; *Hint* Use your solution to ex-209
 
 ; A Word is one of:
 ; - '()
@@ -36,6 +31,18 @@
 ; LStrings -> LStrings
 ; picks out all those Strings that occur in the dictionary.
 (define (in-dictionary ls) '())
+
+; LWords -> LStrings
+; converts all Words in lw to Strings
+(check-expect (words->strings '()) '())
+(check-expect (words->strings lw1) (list "cat" "dear"))
+
+(define (words->strings lw)
+  (cond
+    [(empty? lw) '()]
+    [else (cons (word->string (first lw))
+                (words->strings (rest lw)))]))
+
 
 ; String -> Word
 ; converts s to a Word
