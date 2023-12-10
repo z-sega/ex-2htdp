@@ -1,0 +1,92 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-205) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/itunes)
+
+;; ex-205
+;; Develop examples of LAssoc and LLists, that is,
+;; the list representation of tracks and lists of
+;; such tracks.
+
+
+; A BSDN is one of:
+; - Boolean
+; - Number
+; - String
+; - Date
+;; ... imagine Boolean, Number, and String examples
+(define d1 (create-date 2002 7 17 3 55 14))
+
+(define d2 (create-date 2007 5 3 13 30 0))
+(define d3 (create-date 2011 5 17 17 35 13))
+(define d4 (create-date 2023 1 6 11 35 13))
+(define d5 (create-date 2023 5 17 17 38 47))
+
+
+; An Association is a list of two items:
+;   (cons String (cons BSDN '()))
+(define a1 (list "name" "Wild Child"))
+(define a2 (list "artist" "Enya"))
+(define a3 (list "album" "A Day Without Rain"))
+(define a4 (list "time" 227996))
+(define a5 (list "track#" 2))
+(define a6 (list "added" d1))
+(define a7 (list "play#" 20))
+(define a8 (list "played" d2))
+
+(define a9 (list "name" "Modern Drummer"))
+(define a10 (list "artist" "Ungdomskulen"))
+(define a11 (list "album" "Cry-Baby"))
+(define a12 (list "time" 326000))
+(define a13 (list "track#" 4))
+(define a14 (list "added" d3))
+(define a15 (list "play#" 60))
+(define a16 (list "played" d4))
+
+(define a17 (list "name" "Only Time"))
+(define a18 (list "artist" "Enya"))
+(define a19 (list "album" "A Day Without Rain"))
+(define a20 (list "time" 227996))
+(define a21 (list "track#" 3))
+(define a22 (list "added" d1))
+(define a23 (list "play#" 18))
+(define a24 (list "played" d5))
+
+(define a25 (list "name" "Feels Like Home"))
+(define a26 (list "artist" "Ungdomskulen"))
+(define a27 (list "album" "Cry-Baby"))
+(define a28 (list "time" 315000))
+(define a29 (list "track#" 3))
+(define a30 (list "added" d3))
+(define a31 (list "play#" 5))
+(define a32 (list "played" d4))
+
+
+; An LAssoc is one of:
+; - '()
+; - (cons Association LAssoc)
+(define la1 (list a1 a2 a3 a4 a5 a6 a7 a8))
+(define la2 (list a9 a10 a11 a12 a13 a14 a15 a16))
+(define la3 (list a17 a18 a19 a20 a21 a22 a23 a24))
+(define la4 (list a25 a26 a27 a28 a29 a30 a31 a32))
+
+
+; An LLists is one of:
+; - '()
+; - (cons LAssoc LLists)
+(define ll1 (list la1 la3))
+(define ll2 (list la2 la4))
+(define ll3 (list la1 la2 la3 la4))
+
+;; ----
+
+
+
+;; ----
+
+; modify the following to use your chosen name
+(define ITUNES-LOCATION "./data/itunes.xml")
+
+; LLists
+(define list-tracks
+  (read-itunes-as-lists ITUNES-LOCATION))

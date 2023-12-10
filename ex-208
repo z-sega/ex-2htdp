@@ -1,0 +1,291 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex--208) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/itunes)
+
+;; ex-208
+;; Design boolean-attributes. The function consumes an LLists
+;; and produces the Strings that are associated with a Boolean
+;; attribute.
+;;
+;; *Hint*
+;; Use create-set from ex-201.
+
+; A BSDN is one of:
+; - Boolean
+; - Number
+; - String
+; - Date
+;; ... imagine Boolean, Number, and String examples
+(define d1 (create-date 2002 7 17 3 55 14))
+
+(define d2 (create-date 2007 5 3 13 30 0))
+(define d3 (create-date 2011 5 17 17 35 13))
+(define d4 (create-date 2023 1 6 11 35 13))
+(define d5 (create-date 2023 5 17 17 38 47))
+
+
+; An Association is a list of two items:
+;   (cons String (cons BSDN '()))
+(define a1 (list "Name" "Wild Child"))
+(define a2 (list "Artist" "Enya"))
+(define a3 (list "Album" "A Day Without Rain"))
+(define a4 (list "Total Time" 227996))
+(define a5 (list "Track Number" 2))
+(define a6 (list "Date Added" d1))
+(define a7 (list "Play Count" 20))
+(define a8 (list "Play Date UTC" d2))
+
+(define a9 (list "Name" "Modern Drummer"))
+(define a10 (list "Artist" "Ungdomskulen"))
+(define a11 (list "Album" "Cry-Baby"))
+(define a12 (list "Total Time" 326000))
+(define a13 (list "Track Number" 4))
+(define a14 (list "Date Added" d3))
+(define a15 (list "Play Count" 60))
+(define a16 (list "Play Date UTC" d4))
+
+(define a17 (list "Name" "Only Time"))
+(define a18 (list "Artist" "Enya"))
+(define a19 (list "Album" "A Day Without Rain"))
+(define a20 (list "Total Time" 227996))
+(define a21 (list "Track Number" 3))
+(define a22 (list "Date Added" d1))
+(define a23 (list "Play Count" 18))
+(define a24 (list "Play Date UTC" d5))
+
+(define a25 (list "Name" "Feels Like Home"))
+(define a26 (list "Artist" "Ungdomskulen"))
+(define a27 (list "Album" "Cry-Baby"))
+(define a28 (list "Total Time" 315000))
+(define a29 (list "Track Number" 3))
+(define a30 (list "Date Added" d3))
+(define a31 (list "Play Count" 5))
+(define a32 (list "Play Date UTC" d4))
+
+
+; An LAssoc is one of:
+; - '()
+; - (cons Association LAssoc)
+(define la1 (list a1 a2 a3 a4 a5 a6 a7 a8))
+(define la2 (list a9 a10 a11 a12 a13 a14 a15 a16))
+(define la3 (list a17 a18 a19 a20 a21 a22 a23 a24))
+(define la4 (list a25 a26 a27 a28 a29 a30 a31 a32))
+
+
+; An LLists is one of:
+; - '()
+; - (cons LAssoc LLists)
+(define ll1 (list la1 la3))
+(define ll2 (list la2 la4))
+(define ll3 (list la1 la2 la3 la4))
+
+;; ----
+
+; String LAssoc Any -> Association
+; returns the first Association whose first item is
+; equal to k in la, or default if there is no
+; such Association
+(check-expect (find-association "Name" '() #f) #f)
+(check-expect (find-association "Name" la1 #f) "Wild Child")
+(check-expect (find-association "Play Date UTC" la1 #f) d2)
+
+(define (find-association k la d)
+  (cond
+    [(empty? la) d]
+    [else
+     (if (is-association? k (first la))
+         (second (first la))
+         (find-association k (rest la) d))]))
+
+
+; String Association -> Boolean
+; #t if k is the key for a
+; *implementation-detail* Association is
+; always a list of two elements
+(check-expect (is-association? "fish" a1) #f)
+(check-expect (is-association? "Name" a1) #t)
+
+(define (is-association? k a)
+  (string=? k (first a)))
+
+
+; LLists -> Number
+; computes the total amount of play time in ll
+(check-expect (total-time/list '()) 0)
+(check-expect (total-time/list ll3) (+ 227996 326000 227996 315000))
+
+(define (total-time/list ll)
+  (cond
+    [(empty? ll) 0]
+    [else (+ (play-time (first ll))
+             (total-time/list (rest ll)))]))
+
+
+; LAssoc -> Number
+; computes the number of play-time in la
+(check-expect (play-time la1) 227996)
+(check-expect (play-time la2) 326000)
+
+(define (play-time la)
+  (find-association "Total Time" la 0))
+
+(define bx0 (list "Bool" #t))
+
+(define ax1 (list "Name" "Wild Bears"))
+(define ax2 bx0)
+(define ax3 bx0)
+(define ax4 (list "Is Okay?" #f))
+
+(define bx1 (list "Name" "Shampoo Makers"))
+(define bx2 bx0)
+(define bx3 bx0)
+(define bx4 (list "Is Okay?" #f))
+(define bx5 (list "Is Not Okay?" #t))
+
+(define lax1 (list ax1 ax2 ax3 ax4))
+(define lax2 (list bx1 bx2 bx3 bx4 bx5))
+
+(define llx1 (list lax1
+                   lax2))
+
+; A LStrings is one of:
+; - '()
+; - (cons String LStrings)
+(define lsx1 (list "Bool" "Bool" "Is Okay?"))
+(define lsx11 (list "Bool" "Is Okay?"))
+(define lsx2 (list "Bool" "Bool" "Is Okay?" "Is Not Okay?"))
+(define lsx3 (list "Bool" "Is Okay?" "Is Not Okay?"))
+
+; A LLStrings is one of:
+; - '()
+; - (cons LStrings LLStrings)
+(define lls1 (list (list "Bool" "Is Okay?")
+                    (list "Bool" "Is Okay?" "Is Not Okay?")))
+
+
+; LLists -> LStrings
+; returns the unique Strings that are associated with a Boolean
+; attribute (LAssoc)
+; *implementation-detail*
+; per LAssoc
+(check-expect (boolean-attributes llx1) lsx3)
+
+(define (boolean-attributes ll)
+  (create-set
+   (implode-ll-l
+    (boolean-attributes-all ll))))
+
+
+; LLStrings -> LStrings
+; implodes a lls to LStrings
+; *implementation*
+; by concatenation
+(check-expect (implode-ll-l '()) '())
+(check-expect (implode-ll-l lls1)
+              (list "Bool" "Is Okay?" "Bool" "Is Okay?" "Is Not Okay?"))
+
+(define (implode-ll-l ll)
+  (cond
+    [(empty? ll) '()]
+    [else (append (first ll)
+                  (implode-ll-l (rest ll)))]))
+
+
+; LLists -> LLStrings
+; returns the Strings that are associated with a Boolean
+; attribute (LAssoc)
+; *implementation-detail*
+; per Association
+(check-expect (boolean-attributes-all '()) '())
+(check-expect (boolean-attributes-all llx1) lls1)
+
+(define (boolean-attributes-all ll)
+  (cond
+    [(empty? ll) '()]
+    [else
+     (cons (boolean-attributes/associations/unique (first ll))
+           (boolean-attributes-all (rest ll)))]))
+
+
+; LAssoc -> LStrings
+; returns the names of unique Boolean Associations in la
+(check-expect (boolean-attributes/associations/unique lax1)
+              lsx11)
+
+(define (boolean-attributes/associations/unique la)
+  (create-set (boolean-attributes/associations la)))
+
+
+; LAssoc -> LStrings
+; returns the names of Boolean Associations in la
+(check-expect (boolean-attributes/associations '()) '())
+(check-expect (boolean-attributes/associations lax1) lsx1)
+
+(define (boolean-attributes/associations la)
+  (cond
+    [(empty? la) '()]
+    [else
+     (if (boolean-attribute? (first la))
+         (cons (first (first la))
+               (boolean-attributes/associations (rest la)))
+         (boolean-attributes/associations (rest la)))]))
+
+
+; Assoc -> Boolean
+; #t if a is a Boolean association
+(check-expect (boolean-attribute? bx0) #t)
+(check-expect (boolean-attribute? (list "Name" "A Wild Dog")) #f)
+
+(define (boolean-attribute? a)
+  (boolean? (second a)))
+
+
+(define ls1 (list "track one"))
+(define ls2 (list "track one" "track two"))
+(define lsd1 (list "track one" "track one" "track two"))
+(define lsd2 (list "track one" "track two" "track one" "track two"))
+
+; LStrings -> LStrings
+; returns a list-of-strings like ls without duplicates
+; *implementation-detail*
+; since the function checks first if there are duplicates
+; of a given string in the rest of the given list-of-strings
+; the order is such that:
+; (list s1 s2 s2 s3 s2) -> (list s1 s3 s2)
+(check-expect (create-set '()) '())
+(check-expect (create-set lsd1) ls2)
+(check-expect (create-set lsd2) ls2)
+
+(define (create-set ls)
+  (cond
+    [(empty? ls) '()]
+    [else
+     (if (member? (first ls) (rest ls))
+         (create-set (rest ls))
+         (cons (first ls)
+               (create-set (rest ls))))]))
+   
+;; ----
+
+; modify the following to use your chosen name
+(define ITUNES-LOCATION "./data/itunes.xml")
+
+; LLists
+(define list-tracks
+  (read-itunes-as-lists ITUNES-LOCATION))
+
+;; Once you are done, determine how many Boolean-valued
+;; attributes your iTunes library employs for its tracks.
+;; Do they make sense?
+
+;(boolean-attributes list-tracks)
+; -> (list "Disabled" "Compilation" "Purchased")
+
+;; The Boolean-valued attributes in my iTunes library make
+;; sense because those are all attributes that can be
+;; representated with a Boolean data representation.
+;; For example:
+;; Disabled - Is the track disabled?
+;; Compilation - Is the track a compilation?
+;; Purchased - Is the track purchased?
