@@ -1,0 +1,106 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-212) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/batch-io)
+
+; ---
+
+(define LOCATION "/usr/share/dict/words")
+
+; LStrings is one of:
+; - '()
+; - (cons String LStrings)
+(define ls1 (list "dfksl" "fish" "chair" "rabbi"))
+
+; The Dictionary is a LStrings (short for List-of-Strings).
+(define DICTIONARY (read-lines LOCATION))
+
+; ---
+
+;; *Sample Problem*
+;; Given a word, find all words that are made up from
+;; the same letters. For example "cat" also spells "act".
+
+
+;; ex-212
+;; Write down the data definition for LWords. Make up
+;; examples of Words and LWords. Finally, formulate the
+;; functional example from above with check-expect.
+;; Instead of the full example, consider working with
+;; a word of just two letters, say "d" and "e".
+
+; A Word is one of:
+; - '()
+; - (cons 1String Word)
+; *interpretation*
+; a Word is a list of 1Strings (letters)
+(define w-to (list "t" "o"))
+(define w-cat (list "c" "a" "t"))
+(define w-dear (list "d" "e" "a" "r"))
+  
+; LWords is one of:
+; - '()
+; - (cons Word LWords)
+(define lw1 (list w-cat w-dear))
+(define lw2 (list (list "t" "o")
+                  (list "o" "t")))
+
+
+; Word -> LWords
+; creates all rearrangements of the letters in w
+(check-expect (arrangements '()) '())
+(check-expect (arrangements w-to) lw2)
+
+(define (arrangements w)
+  (cond
+    [(empty? w) ...]
+    [else (... (first w)
+               (arrangements (rest w)) ...)]))
+
+; LStrings -> LStrings
+; picks out all those Strings that occur in the dictionary.
+(check-expect (in-dictionary '()) '())
+(check-expect (in-dictionary ls1) (list "fish" "chair" "rabbi"))
+
+(define (in-dictionary ls)
+  (cond
+    [(empty? ls) '()]
+    [else (if (in-dictionary? (first ls))
+              (cons (first ls)
+                    (in-dictionary (rest ls)))
+              (in-dictionary (rest ls)))]))
+
+; String -> Boolean
+; #t if s is in the DICTIONARY
+(check-expect (in-dictionary? "qazwsx") #f)
+(check-expect (in-dictionary? "cat") #t)
+
+(define (in-dictionary? s)
+  (member? s DICTIONARY))
+
+; LWords -> LStrings
+; converts all Words in lw to Strings
+(check-expect (words->strings '()) '())
+(check-expect (words->strings lw1) (list "cat" "dear"))
+
+(define (words->strings lw)
+  (cond
+    [(empty? lw) '()]
+    [else (cons (word->string (first lw))
+                (words->strings (rest lw)))]))
+
+; String -> Word
+; converts s to a Word
+(check-expect (string->word "") '())
+(check-expect (string->word "cat") (list "c" "a" "t"))
+
+(define (string->word s)
+  (explode s))
+  
+; Word -> String
+; converts w to a String
+(check-expect (word->string '()) "")
+(check-expect (word->string w-cat) "cat")
+
+(define (word->string w)
+  (implode w))
