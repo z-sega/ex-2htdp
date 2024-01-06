@@ -1,0 +1,40 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname ex-tetris-data-repr) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/image)
+(require 2htdp/universe)
+
+(define WIDTH 10) ; # of blocks, horizontally
+(define SIZE 10) ; blocks are squares
+(define SCENE-SIZE (* WIDTH SIZE))
+
+(define BLOCK ; red squares with black rims
+  (overlay
+   (square (- SIZE 1) "solid" "red")
+   (square SIZE "outline" "black")))
+
+; An N is one of:
+; - 0
+; - (add1 N)
+; *interpretation*
+; represents the counting numbers
+
+(define-struct Block [x y])
+; A Block is a structure:
+;   (make-Block N N)
+
+; A Landscape is one of:
+; - '()
+; - (cons Block Landscape)
+
+(define-struct Tetris [block landscape])
+; A Tetris is a structure:
+;   (make-Tetris Block Landscape)
+
+; *intepretations*
+; (make-Block x y) depicts a block whose left
+; corner is (* x SIZE) pixels from the left and
+; (* y SIZE) pixels from the top;
+; 
+; (make-Tetris b0 (list b1 b2 ...)) means b0 is the
+; dropping block, while b1, b2, and ... are resting

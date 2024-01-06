@@ -1,0 +1,17 @@
+Welcome to DrRacket, version 8.6 [cs].
+Language: Beginning Student with List Abbreviations; memory limit: 128 MB.
+> (worm-main 0.5)
+(make-WormGame
+ (make-posn 6 7)
+ (list
+  (make-Segment "down" 4 7)
+  (make-Segment "down" 4 6)
+  (make-Segment "right" 3 6)
+  (make-Segment "up" 3 7)
+  (make-Segment "up" 3 8)
+  (make-Segment "up" 3 8)
+  (make-Segment "left" 4 8)
+  (make-Segment "left" 5 8)
+  (make-Segment "left" 6 8)
+  (make-Segment "left" 7 8)))
+> 
