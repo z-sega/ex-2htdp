@@ -26,7 +26,7 @@
           ; 1.06 -> 1
           ; n -> 
           (define (us-dollar->euro n)
-            (* (/ n 1.06))))
+            (* (/ n US-DOLLAR->EURO))))
     (map us-dollar->euro lon)))
           
 
