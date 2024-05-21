@@ -9,11 +9,11 @@
 ; A BT (short for BinaryTree) is one of:
 ; - NONE
 ; - (make-node Number Symbol BT BT)
-(define a (make-node 15 'd NONE (make-node 24
-                                           'i
+(define a (make-node 15 'a NONE (make-node 24
+                                           'c
                                            NONE NONE)))
-(define b (make-node 13 'd a (make-node 39
-                                        'i
+(define b (make-node 13 'b a (make-node 39
+                                        'd
                                         NONE NONE)))
 
 ;; ex-323
@@ -21,6 +21,8 @@
 ;; BT. If the tree contains a node structure whose ssn field
 ;; is n, the function produces the values of the name field
 ;; in that node. Otherwise, the function produces #false.
+
+(require 2htdp/abstraction)
 
 ; A [Maybe Symbol] is one of:
 ; - #false
@@ -31,15 +33,32 @@
 ; matches n or #false
 (check-expect (search-bt NONE 39) #false)
 (check-expect (search-bt a 39) #false)
-(check-expect (search-bt b 39) 'i)
+(check-expect (search-bt b 39) 'd)
 
 (define (search-bt bt n)
-  (cond
-    [(no-info? bt) #false]
-    [else
-     (local ((define left-search (search-bt (node-left bt) n))
-             (define right-search (search-bt (node-right bt) n)))
-       (if (equal? (node-ssn bt) n)
-           (node-name bt)
-           (or left-search
-               right-search)))]))
+  (match bt
+    [(? no-info?) #false]
+    [(node ssn name left right)
+     (local ((define left-result (search-bt left n))
+             (define right-result (search-bt right n)))
+       (cond
+         [(equal? ssn n) name]
+         [(symbol? left-result) left-result]
+         [(symbol? right-result) right-result]
+         [else #false]))]))
+
+; BT Number -> [Maybe Symbol]
+(check-expect (search-bt.v2 NONE 39) #false)
+(check-expect (search-bt.v2 a 39) #false)
+(check-expect (search-bt.v2 b 39) 'd)
+
+(define (search-bt.v2 bt n)
+  (match bt
+    [(? no-info?) #false]
+    [(node ssn name left right)
+     (if (equal? ssn n)
+         name
+         (for/or ([sub-tree (list left right)])
+           (search-bt.v2 sub-tree n)))]))
+      
+
