@@ -10,7 +10,8 @@
 
 ; ---
 
-(define LOCATION "/usr/share/dict/words")
+(define
+  LOCATION "/usr/share/dict/words")
 
 ; [List-of String]
 (define ls1 (list "dfksl" "fish" "chair" "rabbi"))
