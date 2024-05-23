@@ -66,4 +66,3 @@
        [(equal? ssn0 n) name0]
        [(< n ssn0) (search-bst n L)]
        [(> n ssn0) (search-bst n R)])]))
-

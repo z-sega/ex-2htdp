@@ -19,7 +19,7 @@
 ;; symbols, old and new. The result is like s with all
 ;; occurences of old replaced by new.
 
-; S-expr -> S-expr
+; S-expr Symbol Symbol -> S-expr
 ; replaces all old with new in s
 (check-expect (substitute "new" 'a 'b) "new")
 (check-expect (substitute 'a 'a 'b) 'b)
@@ -49,9 +49,7 @@
             (cond
               [(number? at) at]
               [(string? at) at]
-              [(symbol? at) (if (symbol=? at old)
-                                new
-                                at)])))
+              [(symbol? at) (if (symbol=? at old) new at)])))
     (sub-sexp s)))
 
 
