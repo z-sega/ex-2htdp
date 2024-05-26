@@ -30,6 +30,7 @@
 ;; In the real world, a directory is basically a special file, and
 ;; its size depends on how large its associated directory is.
 
+(require 2htdp/abstraction)
 
 ; Dir -> N
 ; computes the total size of all the files in the
@@ -50,13 +51,11 @@
   (local (; [List-of Dir] -> N
           ; computes the total size of dl
           (define (size-of-dirs dl)
-            (foldr (lambda (d acc)
-                     (+ SUBDIR-SIZE (du d) acc)) 0 dl))
+            (for/sum ([d dl]) (+ SUBDIR-SIZE (du d))))
 
           ; [List-of File] -> N
           ; computes the total size of fl
           (define (size-of-files fl)
-            (foldr (lambda (f acc)
-                     (+ (file-size f) acc)) 0 fl)))
+            (for/sum ([f fl]) (file-size f))))
     (+ (size-of-dirs (dir-dirs dir))
        (size-of-files (dir-files dir)))))
