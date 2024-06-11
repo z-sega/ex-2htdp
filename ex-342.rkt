@@ -91,15 +91,47 @@
 ; Dir String -> [List-of Path]
 ; computes the list of all paths that
 ; lead to f in d
-(check-expect (find Text "part2") '("Text" "part2"))
-(check-expect (find TS "part2") '("TS" "Text" "part2"))
-(check-expect (find TS "read!") '("TS" "read!"))
-(check-expect (find TS "something") #false)
-(check-expect (find Empty "read!") #false)
+(check-expect (find-all Text "part2") '(("Text" "part2")))
+(check-expect (find-all TS "part2") '(("TS" "Text" "part2")))
+(check-expect (find-all TS "read!") '(("TS" "read!")
+                                      ("TS" "Libs" "Docs" "read!")))
+(check-expect (find-all TS "something") '())
+(check-expect (find-all Empty "read!") '())
 
 (define (find-all d f)
-  ())
+  (local (; Dir -> [List-of Path]
+          ; computes a list of paths from d to f
+          (define (find-all-dir d)
+            (local (;; compute search for (dir-dirs d)
+                    (define found-in-dirs
+                      (find-all-dirs (dir-dirs d)))
+                    ;; append (dir-name d) to search result
+                    (define dir-name+found-in-dirs
+                      (map (lambda (p) (cons (dir-name d) p))
+                           (filter cons? found-in-dirs))))
+              (if (find? d f)
+                  (if (find-all-files? (dir-files d))
+                      (cons (list (dir-name d) f)
+                            dir-name+found-in-dirs)
+                      dir-name+found-in-dirs)
+                  '())))
 
+          ; [List-of Dir] -> [List-of Path]
+          ; computes a list of paths from d to f
+          ; for all d in dl
+          (define (find-all-dirs dl)
+            (foldr (lambda (d0 acc) (if (find? d0 f)
+                                        (append (find-all-dir d0) acc)
+                                        acc)) '() dl))
+
+          ; [List-of File] -> Boolean
+          ; #t if f is in fl
+          (define (find-all-files? fl)
+            (ormap (lambda (f-name) (equal? f-name f))
+                   (map file-name fl))))
+    (find-all-dir d)))
+
+       
 ; Dir String -> Boolean
 ; #t if a file named s occurs in dir
 (check-expect (find? Code "hang") #t)
@@ -122,7 +154,7 @@
           ; [List-of File] -> Boolean
           ; #t if file names s occurs in fl
           (define (one-of-files? fl)
-            (foldr (lambda (f acc)
-                     (or (equal? (file-name f) s) acc)) #f fl)))
+            (ormap (lambda (f-name) (equal? f-name s))
+                   (map file-name fl))))
     (or (in-dirs? (dir-dirs dir))
         (one-of-files? (dir-files dir)))))

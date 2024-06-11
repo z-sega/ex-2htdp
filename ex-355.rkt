@@ -111,8 +111,8 @@
 ;; knowledge from Simultaneous Processing.
 
 ;; BSL-var-expr AL -> BSL-var-eval
-;; computes value if (numeric? var-ex) is #true,
-;; else ERROR.
+;; computes the value of ex using definitions
+;; in da if (numeric? result) else ERROR
 (check-expect (eval-variable* ex-number assoc-xy) ex-number)
 (check-expect (eval-variable* (make-add 5 3) assoc-xy) 8)
 (check-expect (eval-variable* (make-mul 5 3) assoc-xy) 15)
@@ -144,3 +144,48 @@
     [else (eval-variable*
            (subst ex (first (first da)) (second (first da)))
            (rest da))]))
+
+
+;; BSL-var-expr AL -> BSL-var-eval
+;; computes the value of ex using definitions
+;; in da if (numeric? result) else ERROR
+(check-expect (eval-var-lookup ex-number assoc-xy) ex-number)
+(check-expect (eval-var-lookup (make-add 5 3) assoc-xy) 8)
+(check-expect (eval-var-lookup (make-mul 5 3) assoc-xy) 15)
+(check-expect (eval-var-lookup (make-add (make-add 3 1) 3)
+                              assoc-xy) 7)
+(check-expect (eval-var-lookup (make-mul (make-mul 3 3) 3)
+                              assoc-xy) 27)
+(check-expect (eval-var-lookup ex-symbol assoc-xy) x)
+(check-expect (eval-var-lookup ex-symbol assoc-x) x)
+(check-expect (eval-var-lookup ex-add assoc-xy) (+ x 3))
+(check-expect (eval-var-lookup ex-add assoc-x) (+ x 3))
+(check-expect (eval-var-lookup ex-mul assoc-xy)
+              (* 1/2 (* x 3)))
+(check-expect (eval-var-lookup ex-mul assoc-x)
+              (* 1/2 (* x 3)))
+(check-expect (eval-var-lookup ex-add-nested assoc-xy)
+              (+ (* x x)
+                 (* y y)))
+(check-error (eval-var-lookup ex-add-nested assoc-x)
+              INVALID-EXPR)
+(check-error (eval-var-lookup ex-symbol '()) INVALID-EXPR)
+(check-error (eval-var-lookup ex-add '()) INVALID-EXPR)
+(check-error (eval-var-lookup ex-mul '()) INVALID-EXPR)
+(check-error (eval-var-lookup ex-add-nested '()) INVALID-EXPR)
+
+(define (eval-var-lookup ex da)
+  (local (; BSL-var-expr -> BSL-var-expr
+          ; replaces symbols in ex from da
+          (define (var-lookup ex)
+            (match ex
+              [(? number?) ex]
+              [(? symbol?) (local ((define var (assq ex da)))
+                             (if (cons? var)
+                                 (second var)
+                                 (error INVALID-EXPR)))]
+              [(add l r) (make-add (var-lookup l)
+                                   (var-lookup r))]
+              [(mul l r) (make-mul (var-lookup l)
+                                   (var-lookup r))])))
+    (eval-variable (var-lookup ex))))

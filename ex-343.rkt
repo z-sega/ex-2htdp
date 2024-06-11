@@ -28,46 +28,6 @@
 (define pathTSToPart1 '("TS" "Text" "part1"))
 (define pathTSToCode '("TS" "Libs" "Code"))
 
-
-
-; A [Maybe X] is one of:
-; - #false
-; - X
-; e.g [Maybe Path]
-
-; Dir String -> [Maybe Path]
-; if (find? d f) is #true, computes a path to
-; a file named f; otherwise #false
-(check-expect (find Text "part2") '("Text" "part2"))
-(check-expect (find TS "part2") '("TS" "Text" "part2"))
-(check-expect (find TS "read!") '("TS" "read!"))
-(check-expect (find TS "something") #false)
-(check-expect (find Empty "read!") #false)
-
-(define (find d f)
-  (local (; [List-of File] -> Path
-          ; computes path to f from fl
-          (define (path-in-files fl)
-            (foldr (lambda (file acc)
-                     (if (equal? (file-name file) f)
-                         (list (file-name file))
-                         acc)) '() fl))
-
-          ; [List-of Dir] -> [Maybe Path]
-          ; computes path to f from dl
-          (define (path-in-dirs dl)
-            (foldr (lambda (dir acc)
-                     (if (find? dir f) (find dir f) acc)) '() dl)))
-
-    (if (find? d f)
-        (local ((define path-from-files (path-in-files (dir-files d)))
-                (define path-from-dirs (path-in-dirs (dir-dirs d))))
-          (cons (dir-name d)
-                (cond
-                  [(not (empty? path-from-files)) path-from-files]
-                  [(not (empty? path-from-dirs)) path-from-dirs])))
-        #false)))
-
 ; Dir String -> Boolean
 ; #t if a file named s occurs in dir
 (check-expect (find? Code "hang") #t)

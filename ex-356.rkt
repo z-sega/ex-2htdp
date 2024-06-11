@@ -25,9 +25,47 @@
 (define ex-add-nested (make-add (make-mul 'x 'x)
                                 (make-mul 'y 'y)))
 
+;; ex-356
+;; Extend the data representation of Interpreting Variables
+;; (i.e BSL-var-expr) to include the application of a
+;; programmer-defined function. Recall that a function application
+;; consists of two pieces; a name and an expression. The former is
+;; the name of the function that is applied; the latter is the
+;; argument.
+;; Represent these expressions:
+;; - (k (+ 1 1))
+;; - (* 5 (k (+ 1 1)))
+;; - (* (i 5) (k (+ 1 1)))
+(define (k x) (add1 x))
+(define (i x) x)
+
+(define-struct fun-app [name arg])
+; A fun-app (short for function application) is a structure:
+;   (make-fun-app Symbol BSL-fun-expr)
+; *intepretation*
+; (make-fun-app f x) represents the application of a function
+; f to x; equivalent to (f x)
+
+; A BSL-fun-expr is one of:
+; - Number
+; - Symbol
+; - (make-add BSL-fun-expr BSL-fun-expr)
+; - (make-mul BSL-fun-expr BSL-fun-expr)
+; - (make-fun-app Symbol BSL-fun-expr)
+; ... (i.e include BSL-var-expr examples)
+(define ex-fun1 (make-fun-app 'k (make-add 1 1)))
+(define ex-fun2 (make-mul 5 (make-fun-app 'k (make-add 1 1))))
+(define ex-fun3 (make-mul (make-fun-app 'i 5)
+                          (make-fun-app 'k (make-add 1 1))))
+
 ; A BSL-var-eval is a Number
 ; *interpretation*
-; Is any value to which a representation of a BSL-expr
+; Is any value to which a representation of a BSL-var-expr
+; can evaluate to.
+
+; A BSL-fun-eval is a Number
+; *interpretation*
+; Is any value to which a representation of a BSL-fun-expr
 ; can evaluate to.
 
 ; An AL (short for association list) is [List-of Association]
@@ -111,8 +149,8 @@
 ;; knowledge from Simultaneous Processing.
 
 ;; BSL-var-expr AL -> BSL-var-eval
-;; computes value if (numeric? var-ex) is #true,
-;; else ERROR.
+;; computes the value of ex using definitions
+;; in da if (numeric? result) else ERROR
 (check-expect (eval-variable* ex-number assoc-xy) ex-number)
 (check-expect (eval-variable* (make-add 5 3) assoc-xy) 8)
 (check-expect (eval-variable* (make-mul 5 3) assoc-xy) 15)
@@ -144,3 +182,48 @@
     [else (eval-variable*
            (subst ex (first (first da)) (second (first da)))
            (rest da))]))
+
+
+;; BSL-var-expr AL -> BSL-var-eval
+;; computes the value of ex using definitions
+;; in da if (numeric? result) else ERROR
+(check-expect (eval-var-lookup ex-number assoc-xy) ex-number)
+(check-expect (eval-var-lookup (make-add 5 3) assoc-xy) 8)
+(check-expect (eval-var-lookup (make-mul 5 3) assoc-xy) 15)
+(check-expect (eval-var-lookup (make-add (make-add 3 1) 3)
+                              assoc-xy) 7)
+(check-expect (eval-var-lookup (make-mul (make-mul 3 3) 3)
+                              assoc-xy) 27)
+(check-expect (eval-var-lookup ex-symbol assoc-xy) x)
+(check-expect (eval-var-lookup ex-symbol assoc-x) x)
+(check-expect (eval-var-lookup ex-add assoc-xy) (+ x 3))
+(check-expect (eval-var-lookup ex-add assoc-x) (+ x 3))
+(check-expect (eval-var-lookup ex-mul assoc-xy)
+              (* 1/2 (* x 3)))
+(check-expect (eval-var-lookup ex-mul assoc-x)
+              (* 1/2 (* x 3)))
+(check-expect (eval-var-lookup ex-add-nested assoc-xy)
+              (+ (* x x)
+                 (* y y)))
+(check-error (eval-var-lookup ex-add-nested assoc-x)
+              INVALID-EXPR)
+(check-error (eval-var-lookup ex-symbol '()) INVALID-EXPR)
+(check-error (eval-var-lookup ex-add '()) INVALID-EXPR)
+(check-error (eval-var-lookup ex-mul '()) INVALID-EXPR)
+(check-error (eval-var-lookup ex-add-nested '()) INVALID-EXPR)
+
+(define (eval-var-lookup ex da)
+  (local (; BSL-var-expr -> BSL-var-expr
+          ; replaces symbols in ex from da
+          (define (var-lookup ex)
+            (match ex
+              [(? number?) ex]
+              [(? symbol?) (local ((define var (assq ex da)))
+                             (if (cons? var)
+                                 (second var)
+                                 (error INVALID-EXPR)))]
+              [(add l r) (make-add (var-lookup l)
+                                   (var-lookup r))]
+              [(mul l r) (make-mul (var-lookup l)
+                                   (var-lookup r))])))
+    (eval-variable (var-lookup ex))))
