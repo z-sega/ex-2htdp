@@ -1,6 +1,6 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-intermediate-lambda-reader.ss" "lang")((modname ex-369) (read-case-sensitive #true) (teachpacks ()) (htdp-settings #(#true constructor repeating-decimal #false #true none #false () #false)))
+#reader(lib "htdp-intermediate-lambda-reader.ss" "lang")((modname ex-369) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 ; An Xexpr.v0 is a one-item list:
 ;   (cons Symbol '())
 
@@ -98,6 +98,8 @@
 (define a1 '((initial "red") (next "blue") (turn "Jimmy")))
 
 ; [List-of Attribute] Symbol -> [Maybe String]
+; given attr* and sy, returns associated String str
+; if (list sy str) in attr*, else returns #false 
 (check-expect (find-attr '() 'next) #false)
 (check-expect (find-attr a1 'next) "blue")
 (check-expect (find-attr a1 'turn) "Jimmy")
