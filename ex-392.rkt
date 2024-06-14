@@ -1,6 +1,6 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-intermediate-lambda-reader.ss" "lang")((modname ex-390) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+#reader(lib "htdp-intermediate-lambda-reader.ss" "lang")((modname ex-392) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
 ;; ex-390
 ;; Design the function tree-pick. The function consumes
 ;; a tree of symbols and a list of directions:
@@ -51,8 +51,7 @@
 
 (define (tree-pick tree d*)
   (cond
-    [(and (empty? d*) (symbol? tree)) tree]
-    [(and (empty? d*) (branch? tree)) tree]
+    [(empty? d*) tree]
     [(and (cons? d*) (symbol? tree)) (error ERR)]
     [(and (cons? d*) (branch? tree))
      (tree-pick
