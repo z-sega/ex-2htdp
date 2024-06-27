@@ -1,0 +1,53 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-lambda-reader.ss" "lang")((modname ex-428) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; ex-428
+;; If the input to quick-sort< contains the same
+;; number several times, the algorithm returns a list
+;; that is strictly shorter than the input.
+;; Why?
+;; Fix the problem so that the output is as long as
+;; the input.
+
+; [List-of Number] -> [List-of Number]
+; produces a sorted version of l
+(check-expect (quick-sort< '(11 8 14 7))
+              '(7 8 11 14))
+(check-expect (quick-sort< '(11 8 8 14 7 7))
+              '(7 7 8 8 11 14))
+
+(define (quick-sort< l)
+  (cond [(empty? l) '()]
+        [(= (length l) 1) l]
+        [else
+         (local ((define pivot (first l))
+                 (define sm (smallers l pivot))
+                 (define lg (largers l pivot))
+                 (define pivot-equivalents
+                   (rest
+                    (filter (lambda (i) (= i pivot))
+                            l))))
+           (append
+            (quick-sort< sm)
+            (cons pivot pivot-equivalents)
+            (quick-sort< lg)))]))
+                                 
+; [List-of Number] Number -> [List-of Number]
+; produces a list like l but all elements are
+; smaller than n
+(check-expect (smallers '() 1) '())
+(check-expect (smallers '(2 3 7 5) 1) '())
+(check-expect (smallers '(2 3 3 7 5) 5) '(2 3 3))
+
+(define (smallers l n)
+  (filter (lambda (i) (< i n)) l))
+
+; [List-of Number] Number -> [List-of Number]
+; produces a list like l but all elements are
+; larger than n
+(check-expect (largers '() 1) '())
+(check-expect (largers '(2 3 3 7 5) 1) '(2 3 3 7 5))
+(check-expect (largers '(2 3 7 5) 5) '(7))
+
+(define (largers l n)
+  (filter (lambda (i) (> i n)) l))
